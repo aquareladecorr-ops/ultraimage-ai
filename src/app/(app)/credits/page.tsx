@@ -1,26 +1,24 @@
-import { createServer } from "@/lib/supabase/server";
+import { createServer, createAdminClient } from "@/lib/supabase/server";
 import { CreditsPanel } from "@/components/app/credits-panel";
-import { unstable_noStore as noStore } from "next/cache";
 
 export default async function CreditsPage({
   searchParams,
 }: {
   searchParams: { status?: string; package?: string };
 }) {
-  noStore();
-
   const supabase = createServer();
+  const admin = createAdminClient();
   const { data: auth } = await supabase.auth.getUser();
   const userId = auth.user!.id;
 
   const [{ data: profile }, { data: payments }, { data: transactions }] =
     await Promise.all([
-      supabase
+      admin
         .from("profiles")
         .select("credits_available, total_credits_purchased")
         .eq("id", userId)
         .single(),
-      supabase
+      admin
         .from("payments")
         .select(
           "id, package_name, credits_purchased, amount_brl, status, created_at, payment_method"
@@ -28,7 +26,7 @@ export default async function CreditsPage({
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(15),
-      supabase
+      admin
         .from("credit_transactions")
         .select("type, amount, description, created_at")
         .eq("user_id", userId)
