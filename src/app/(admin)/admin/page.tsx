@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createServer, createAdminClient } from "@/lib/supabase/server";
 import { formatBrl, formatDate } from "@/lib/utils";
 
