@@ -1,44 +1,39 @@
 import { NextResponse } from "next/server";
+import { createAdminClient, createServer } from "@/lib/supabase/server";
 
 export async function GET() {
-    const token = process.env.MERCADO_PAGO_ACCESS_TOKEN!;
+  const admin = createAdminClient();
+  const userClient = createServer();
 
-    // 1. Buscar dados do usuário/vendedor
-    const userRes = await fetch("https://api.mercadopago.com/users/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-    const userData = await userRes.json();
+  // Get Supabase session user
+  const { data: auth } = await userClient.auth.getUser();
+  const supabaseUser = auth?.user
+    ? { id: auth.user.id, email: auth.user.email }
+    : null;
 
-    // 2. Buscar chaves PIX cadastradas
-    const pixRes = await fetch("https://api.mercadopago.com/v1/pix-keys", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-    const pixData = await pixRes.json();
-
-    // 3. Criar uma preferência de teste e ver os payment_methods retornados
-    const prefRes = await fetch("https://api.mercadopago.com/checkout/preferences", {
-          method: "POST",
-          headers: {
-                  Authorization: `Bearer ${token}`,
-                  "Content-Type": "application/json",
-                },
-          body: JSON.stringify({
-                  items: [{ title: "Teste PIX", quantity: 1, unit_price: 12.9, currency_id: "BRL" }],
-                  payment_methods: { excluded_payment_types: [], excluded_payment_methods: [], installments: 1 },
-                }),
-        });
-    const prefData = await prefRes.json();
-
-    return NextResponse.json({
-          user: {
-                  id: userData.id,
-                  email: userData.email,
-                  status: userData.status,
-                  tags: userData.tags,
-                  site_status: userData.site_status,
-                },
-          pix_keys: pixData,
-          preference_payment_methods: prefData.payment_methods,
-          preference_id: prefData.id,
-        });
+  // Get profile data using admin (bypasses RLS)
+  let profile = null;
+  if (auth?.user) {
+    const { data, error } = await admin
+      .from("profiles")
+      .select("*")
+      .eq("id", auth.user.id)
+      .single();
+    profile = { data, error: error?.message };
   }
+
+  // Get MP user
+  let mpUser = null;
+  try {
+    const res = await fetch("https://api.mercadopago.com/users/me", {
+      headers: {
+        Authorization: `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`,
+      },
+    });
+    mpUser = await res.json();
+  } catch (e) {
+    mpUser = { error: String(e) };
+  }
+
+  return NextResponse.json({ supabaseUser, profile, mpUser });
+}
