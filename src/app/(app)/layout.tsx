@@ -1,17 +1,15 @@
-import { createServer } from "@/lib/supabase/server";
+import { createServer, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SignOutButton } from "@/components/app/sign-out-button";
-import { unstable_noStore as noStore } from "next/cache";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  noStore();
-
   const supabase = createServer();
+  const admin = createAdminClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) redirect("/login");
 
-  const { data: profile } = await supabase
+  const { data: profile } = await admin
     .from("profiles")
     .select("credits_available, full_name, email, is_admin")
     .eq("id", auth.user.id)
