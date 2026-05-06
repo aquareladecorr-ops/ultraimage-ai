@@ -27,14 +27,24 @@ export function Hero() {
           >
             Cada pixel,<br />
             <em className="italic text-copper" style={{ fontVariationSettings: '"opsz" 144, "SOFT" 100' }}>
-              em sua melhor
+              em sua melhor{" "}
             </em>
             <br />
             versão.
           </h1>
           <p className="md:col-span-3 text-bone-dim text-base md:text-[17px] leading-relaxed border-l border-ink-line pl-5">
             Ampliação de imagens com IA premium. Resolução até{" "}
-            <span className="text-bone">100 megapixels</span>, processamento em segundos, qualidade que sustenta impressão grande.
+            <span className="text-bone">100 megapixels</span>, processamento em
+            segundos, qualidade que sustenta impressão grande.
+          </p>
+        </div>
+
+        {/* Badge acima do comparador */}
+        <div className="mb-5 flex items-center gap-3">
+          <span className="w-px h-4 bg-copper/60 flex-shrink-0" />
+          <p className="text-sm font-mono text-bone-dim tracking-wide">
+            Resultado com textura real —{" "}
+            <span className="text-bone">sem aquele acabamento plástico que outros melhoradores deixam.</span>
           </p>
         </div>
 
