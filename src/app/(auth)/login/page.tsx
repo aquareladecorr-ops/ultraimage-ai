@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -9,7 +11,6 @@ export default function LoginPage() {
   const router = useRouter();
   const search = useSearchParams();
   const next = search.get("next") || "/dashboard";
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,6 @@ export default function LoginPage() {
         Bem-vindo de volta.
       </h1>
       <p className="text-bone-dim mb-10">Continue de onde parou.</p>
-
       <button
         type="button"
         onClick={handleGoogle}
@@ -53,13 +53,11 @@ export default function LoginPage() {
       >
         Entrar com Google
       </button>
-
       <div className="flex items-center gap-3 mb-6">
         <div className="flex-1 h-px bg-ink-line" />
         <span className="text-xs text-bone-dim font-mono">ou</span>
         <div className="flex-1 h-px bg-ink-line" />
       </div>
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-xs uppercase tracking-[0.2em] text-bone-dim mb-2 font-mono">E-mail</label>
@@ -87,9 +85,7 @@ export default function LoginPage() {
             className="w-full bg-ink-deep border border-ink-line px-4 py-3 text-bone focus:border-copper focus:outline-none transition"
           />
         </div>
-
         {error && <p className="text-sm text-copper-deep">{error}</p>}
-
         <button
           type="submit"
           disabled={loading}
@@ -98,7 +94,6 @@ export default function LoginPage() {
           {loading ? "Entrando..." : "Entrar"}
         </button>
       </form>
-
       <p className="mt-8 text-sm text-bone-dim text-center">
         Não tem conta?{" "}
         <Link href="/signup" className="text-copper hover:underline">
