@@ -2,8 +2,11 @@ import { createServer } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SignOutButton } from "@/components/app/sign-out-button";
+import { unstable_noStore as noStore } from "next/cache";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  noStore();
+
   const supabase = createServer();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) redirect("/login");
@@ -23,7 +26,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <div className="absolute inset-0 rounded-sm border border-copper rotate-45" />
               <div className="absolute inset-1 bg-copper rotate-45" />
             </div>
-            <span className="font-display tracking-tight" style={{ fontWeight: 500, fontSize: "18px" }}>
+            <span
+              className="font-display tracking-tight"
+              style={{ fontWeight: 500, fontSize: "18px" }}
+            >
               ultraimage<span className="text-copper">.</span>ai
             </span>
           </Link>
