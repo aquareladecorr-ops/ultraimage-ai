@@ -1,0 +1,44 @@
+/**
+ * Package definitions — kept in sync with `packages` table in DB.
+ * The DB is source of truth at runtime; this file is for type safety
+ * and for static rendering on landing/marketing pages.
+ */
+
+export type PackageKind = "one_time" | "subscription";
+
+export type Package = {
+  id: string;
+  name: string;
+  description: string;
+  kind: PackageKind;
+  credits: number;
+  priceBrl: number;
+  isFeatured: boolean;
+};
+
+export const ONE_TIME_PACKAGES: readonly Package[] = [
+  { id: "avulso",       name: "Avulso",       description: "Para experimentar",   kind: "one_time", credits: 5,   priceBrl: 12.90, isFeatured: false },
+  { id: "iniciante",    name: "Iniciante",    description: "Boa primeira compra", kind: "one_time", credits: 25,  priceBrl: 49.90, isFeatured: false },
+  { id: "essencial",    name: "Essencial",    description: "O preferido",         kind: "one_time", credits: 80,  priceBrl: 129.00, isFeatured: true },
+  { id: "profissional", name: "Profissional", description: "Para fotógrafos",     kind: "one_time", credits: 250, priceBrl: 349.00, isFeatured: false },
+  { id: "estudio",      name: "Estúdio",      description: "Volume alto",         kind: "one_time", credits: 800, priceBrl: 899.00, isFeatured: false },
+] as const;
+
+export const SUBSCRIPTION_PACKAGES: readonly Package[] = [
+  { id: "plan_light",    name: "Light",    description: "Uso leve, sempre pronto", kind: "subscription", credits: 30,  priceBrl: 49.90,  isFeatured: false },
+  { id: "plan_pro",      name: "Pro",      description: "O equilíbrio ideal",      kind: "subscription", credits: 100, priceBrl: 129.00, isFeatured: true },
+  { id: "plan_business", name: "Business", description: "Equipes e gráficas",      kind: "subscription", credits: 400, priceBrl: 399.00, isFeatured: false },
+] as const;
+
+export const ALL_PACKAGES = [...ONE_TIME_PACKAGES, ...SUBSCRIPTION_PACKAGES];
+
+export function getPackageById(id: string): Package | undefined {
+  return ALL_PACKAGES.find((p) => p.id === id);
+}
+
+export function formatBrl(value: number): string {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value);
+}
