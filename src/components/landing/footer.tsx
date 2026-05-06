@@ -16,11 +16,6 @@ export function Footer() {
             <p className="text-bone-dim leading-relaxed max-w-md mb-6">
               A primeira plataforma brasileira de upscale premium com IA. Feita por brasileiros, em português, com pagamento em real.
             </p>
-            <div className="flex items-center gap-4 text-xs text-bone-dim font-mono">
-              <span>CNPJ 00.000.000/0001-00</span>
-              <span className="w-px h-3 bg-ink-line" />
-              <span>Brasil</span>
-            </div>
           </div>
 
           {[
