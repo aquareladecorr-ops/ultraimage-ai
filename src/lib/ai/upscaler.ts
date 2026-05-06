@@ -51,9 +51,8 @@ class UpscalerService {
   private client: Replicate;
 
   constructor() {
-    if (!process.env.AI_PROVIDER_API_KEY) {
-      throw new Error("AI_PROVIDER_API_KEY is not set");
-    }
+    // API key will be validated at runtime
+    const apiKey = process.env.AI_PROVIDER_API_KEY;
     this.client = new Replicate({ auth: process.env.AI_PROVIDER_API_KEY });
   }
 
