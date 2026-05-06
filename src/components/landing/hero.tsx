@@ -34,12 +34,10 @@ export function Hero() {
           </h1>
           <p className="md:col-span-3 text-bone-dim text-base md:text-[17px] leading-relaxed border-l border-ink-line pl-5">
             Ampliação de imagens com IA premium. Resolução até{" "}
-            <span className="text-bone">100 megapixels</span>, processamento em
-            segundos, qualidade que sustenta impressão grande.
+            <span className="text-bone">100 megapixels</span>, processamento em segundos, qualidade que sustenta impressão grande.
           </p>
         </div>
 
-        {/* Badge acima do comparador */}
         <div className="mb-5 flex items-center gap-3">
           <span className="w-px h-4 bg-copper/60 flex-shrink-0" />
           <p className="text-sm font-mono text-bone-dim tracking-wide">
@@ -59,11 +57,7 @@ export function Hero() {
             <ArrowUpRight size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </Link>
           <div className="flex items-center gap-6 text-sm text-bone-dim font-mono">
-            <span>5 créditos grátis</span>
-            <span className="w-px h-4 bg-ink-line" />
-            <span>sem cartão</span>
-            <span className="hidden sm:block w-px h-4 bg-ink-line" />
-            <span className="hidden sm:block">Pix · Cartão</span>
+            <span>Pix · Cartão · Boleto</span>
           </div>
         </div>
       </div>
