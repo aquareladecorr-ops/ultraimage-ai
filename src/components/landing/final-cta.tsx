@@ -9,24 +9,22 @@ export function FinalCta() {
 
       <div className="max-w-[1100px] mx-auto relative text-center">
         <div className="text-xs uppercase tracking-[0.3em] text-copper mb-6 font-mono">§ Comece agora</div>
-        <h2 className="font-display leading-[0.92] tracking-editorial mb-10" style={{ fontWeight: 300, fontSize: "clamp(48px, 8vw, 112px)" }}>
+        <h2
+          className="font-display leading-[0.92] tracking-editorial mb-10"
+          style={{ fontWeight: 300, fontSize: "clamp(48px, 8vw, 112px)" }}
+        >
           Sua próxima foto<br />
           <em className="italic text-copper">vai impressionar.</em>
         </h2>
-        <p className="text-bone-dim text-lg max-w-xl mx-auto mb-12 leading-relaxed">
-          Cinco créditos grátis pra começar. Sem cartão. Sem cadastro de cobrança. Você só paga se gostar.
-        </p>
+
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/signup" className="group inline-flex items-center gap-3 bg-bone text-ink px-8 py-4 text-base font-medium hover:bg-copper transition-colors">
-            Criar conta grátis
+          <Link
+            href="/signup"
+            className="group inline-flex items-center gap-3 bg-bone text-ink px-8 py-4 text-base font-medium hover:bg-copper transition-colors"
+          >
+            Criar conta
             <ArrowUpRight size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </Link>
-          <a
-            href="https://wa.me/5500000000000"
-            className="inline-flex items-center gap-3 text-bone px-8 py-4 text-base hover:text-copper transition-colors border-b border-ink-line hover:border-copper"
-          >
-            Falar com humano · WhatsApp
-          </a>
         </div>
       </div>
     </section>
