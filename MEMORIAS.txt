@@ -1,0 +1,187 @@
+================================================================
+MEMORIAS DO PROJETO - ULTRAIMAGE AI
+Atualizado: 07/05/2026
+================================================================
+
+----------------------------------------------------------------
+1. IDENTIDADE DO PROJETO
+----------------------------------------------------------------
+Nome publico    : UltraImage AI
+URL producao    : https://www.ultraimageai.com
+Repositorio     : aquareladecorr-ops/ultraimage-ai
+Stack           : Next.js 14 (App Router), TypeScript, Tailwind CSS
+Admin email     : aquareladecorr@gmail.com
+
+----------------------------------------------------------------
+2. SERVICOS E CREDENCIAIS (NUNCA COMMITAR .env.local)
+----------------------------------------------------------------
+Supabase
+  Projeto ID  : fshgkdtpxuptkisedcbz
+    Regiao      : sa-east-1 (Sao Paulo) -- OBRIGATORIO esta regiao
+      Tabelas     : profiles, payments, credit_transactions, images, packages
+
+      Vercel
+        Org         : aquareladecorr-ops-projects
+          Projeto     : ultraimage-ai
+            Deploy atual: d0sj534ct (Ready, 07/05/2026)
+
+            Mercado Pago
+              Var de env  : MERCADO_PAGO_ACCESS_TOKEN (NAO usar MP_ACCESS_TOKEN)
+                Webhook URL : https://www.ultraimageai.com/api/webhooks/mercadopago
+                  ATENCAO     : Webhook nao esta chegando do MP -- sync-payment funciona como fallback
+
+                  IA / Replicate
+                    Modelo      : philz1337x/crystal-upscaler
+                      Var de env  : AI_PROVIDER_API_KEY
+                        NUNCA expor : No frontend sempre chamar de "Ultra Engine" -- NUNCA mencionar Replicate ou crystal-upscaler
+
+                        Supabase Storage
+                          Bucket      : images (migrado de Cloudflare R2)
+
+                          DNS
+                            Registrador : Hostinger
+                              Dominio     : ultraimageai.com -> Vercel
+
+                              ----------------------------------------------------------------
+                              3. REGRAS CRITICAS (SEMPRE SEGUIR)
+                              ----------------------------------------------------------------
+                              - NUNCA commitar .env.local no git
+                              - NUNCA expor Replicate ou crystal-upscaler no frontend (usar "Ultra Engine")
+                              - SEMPRE usar github.dev para editar arquivos TSX/TS (NAO o editor web normal)
+                              - No github.dev: usar Ctrl+A + Delete antes de digitar novo conteudo
+                              - Aspas inteligentes quebram o TypeScript -- o editor web normal as introduz
+                              - Design system: SEMPRE usar as classes customizadas abaixo (nunca substituir por genericas)
+                              - Coluna da tabela payments: credits_purchased (NAO credits_amount), amount_brl (NAO amount)
+                              - Tabela credit_transactions: coluna balance_after NOT NULL -- incluir sempre em INSERTs
+
+                              ----------------------------------------------------------------
+                              4. DESIGN SYSTEM (CLASSES CSS CUSTOMIZADAS)
+                              ----------------------------------------------------------------
+                              Fundos       : bg-ink-deep, bg-ink-line, bg-ink-card, bg-copper
+                              Texto        : text-copper, text-bone, text-bone-dim, text-copper-deep
+                              Bordas       : border-copper, border-ink-line, border-bone-dim
+                              Tipografia   : font-display, font-mono
+                              Estilo geral : dark/copper -- fundo escuro com dourado/cobre
+
+                              ----------------------------------------------------------------
+                              5. ESTRUTURA DE ARQUIVOS IMPORTANTES
+                              ----------------------------------------------------------------
+                              src/config/packages.ts          -- Definicao de pacotes e precos
+                              src/components/app/credits-panel.tsx -- Painel de creditos (UI)
+                              src/app/api/checkout/route.ts   -- Criacao de preferencia MP
+                              src/app/api/sync-payment/route.ts -- Sincronizacao de pagamentos pendentes
+                              src/app/api/webhooks/mercadopago/route.ts -- Webhook MP
+                              src/app/api/download/route.ts   -- Download de imagens (API route)
+                              src/lib/payments/mercadopago.ts -- Integracao MP
+                              src/lib/ai/upscaler.ts          -- Integracao Replicate (Ultra Engine)
+                              src/lib/supabase/server.ts      -- createServer() e createAdminClient()
+
+                              ----------------------------------------------------------------
+                              6. TABELA payments -- COLUNAS REAIS CONFIRMADAS
+                              ----------------------------------------------------------------
+                              id, user_id, mp_payment_id, mp_preference_id, mp_status,
+                              package_id, package_name, credits_purchased, amount_brl,
+                              payment_method, status, credited_at, raw_payload
+                              (NAO existem colunas credits_amount nem amount)
+
+                              ----------------------------------------------------------------
+                              7. PRECIFICACAO (atualizado 07/05/2026)
+                              ----------------------------------------------------------------
+                              Modelo de custos:
+                                - Custo Replicate: ~USD 0.80/imagem (saida ~48MP, upscale 2x tipico)
+                                  - Cambio referencia: USD 1 = BRL 4.94 (07/05/2026)
+                                    - Custo medio por credito: ~BRL 3.95
+                                      - Taxa Mercado Pago (media): ~4.5%
+                                        - Margem liquida alvo: 20%
+                                          - Preco cheio formula: custo / (1 - 0.20 - 0.045) = custo / 0.755
+
+                                          Pacotes avulsos (priceBrl = lancamento, fullPriceBrl = preco cheio):
+                                            Avulso      :  5 creditos | lancamento R$  12,90 | cheio R$  21,90
+                                              Iniciante   : 25 creditos | lancamento R$  49,90 | cheio R$ 104,90
+                                                Essencial   : 80 creditos | lancamento R$ 129,00 | cheio R$ 335,00
+                                                  Profissional: 250 creditos | lancamento R$ 349,00 | cheio R$ 1.032,00
+                                                    Estudio     : 800 creditos | lancamento R$ 899,00 | cheio R$ 3.352,00
+
+                                                    Assinaturas (nao implementadas ainda no checkout):
+                                                      Light       :  30 creditos/mes | lancamento R$  49,90 | cheio R$  99,90
+                                                        Pro         : 100 creditos/mes | lancamento R$ 129,00 | cheio R$ 259,00
+                                                          Business    : 400 creditos/mes | lancamento R$ 399,00 | cheio R$ 899,00
+
+                                                          ----------------------------------------------------------------
+                                                          8. LOGICA DE SINCRONIZACAO DE PAGAMENTOS
+                                                          ----------------------------------------------------------------
+                                                          Problema historico: MP nao estava chamando o webhook.
+                                                          Solucao implementada: sync-payment robusto como fallback.
+
+                                                          Fluxo do sync-payment (POST /api/sync-payment):
+                                                            1. Busca todos os payments com status=pending do usuario
+                                                              2. Para cada um: tenta buscar no MP por mp_payment_id
+                                                                3. Se nao tem mp_payment_id: busca por external_reference na API MP
+                                                                  4. Se encontrar aprovado: credita e atualiza o banco
+                                                                    5. Retorna { credited: N } -- numero de creditos adicionados
+
+                                                                    credits-panel.tsx detecta hasPending:
+                                                                      - Se ha pagamentos pendentes: dispara syncPayments() automaticamente
+                                                                        - Mostra banner amarelo com botao "Sincronizar"
+                                                                          - Exibe resultado da sincronizacao
+
+                                                                          ----------------------------------------------------------------
+                                                                          9. HISTORICO DE DEPLOYS RELEVANTES
+                                                                          ----------------------------------------------------------------
+                                                                          f61764b -- fix: restore original dark/copper design in credits-panel
+                                                                          43daf0f -- fix: robust sync-payment + credits-panel improvements
+                                                                          487f6dd -- feat: launch pricing with 20% margin + launch promo badges (ERRO build)
+                                                                          3954c76 -- fix: packages.ts clean rewrite - new pricing 20% margin
+                                                                          aa7f9a6 -- fix: original prices as launch promo, new prices as full price
+                                                                          d0sj534ct -- DEPLOY ATUAL EM PRODUCAO (07/05/2026)
+
+                                                                          ----------------------------------------------------------------
+                                                                          10. ETAPAS JA CONCLUIDAS NO PROJETO
+                                                                          ----------------------------------------------------------------
+                                                                          [OK] ZIP baixado + upload GitHub
+                                                                          [OK] Supabase criado (sa-east-1) + 5 tabelas migradas
+                                                                          [OK] Vercel deploy configurado
+                                                                          [OK] DNS Hostinger configurado
+                                                                          [OK] Google OAuth configurado
+                                                                          [OK] Checkout Mercado Pago (PIX + cartao) funcionando
+                                                                          [OK] Creditos visiveis no dashboard
+                                                                          [OK] Botao "Processar agora" ativo com adminClient
+                                                                          [OK] Storage migrado de Cloudflare R2 para Supabase Storage
+                                                                          [OK] AI_PROVIDER_API_KEY (Replicate) configurado
+                                                                          [OK] Download de imagens via API route (nao abre nova aba)
+                                                                          [OK] Sync-payment robusto (busca todos os pendentes automaticamente)
+                                                                          [OK] Design dark/copper original preservado
+                                                                          [OK] Precificacao com margem de 20% + badge "Lancamento"
+
+                                                                          ----------------------------------------------------------------
+                                                                          11. PENDENCIAS / PROXIMOS PASSOS
+                                                                          ----------------------------------------------------------------
+                                                                          [ ] Webhook MP: verificar no painel MP se notification_url esta correta
+                                                                              URL correta: https://www.ultraimageai.com/api/webhooks/mercadopago
+                                                                              [ ] RESEND_API_KEY: adicionar na Vercel para emails de notificacao
+                                                                                  (emails falham silenciosamente sem esta variavel)
+                                                                                  [ ] Pagamentos "fantasma": ~8 payments com status=pending sem registro no MP
+                                                                                      (preferencias criadas mas checkout nao finalizado -- podem ser marcados rejected)
+                                                                                      [ ] Assinaturas: checkout recorrente nao implementado ainda
+                                                                                      [ ] Webhook: se MP nao chamar automaticamente, investigar ngrok/logs no painel MP
+
+                                                                                      ----------------------------------------------------------------
+                                                                                      12. COMO EDITAR ARQUIVOS TSX/TS (REGRA CRITICA)
+                                                                                      ----------------------------------------------------------------
+                                                                                      1. Abrir: https://github.dev/aquareladecorr-ops/ultraimage-ai
+                                                                                      2. Navegar ate o arquivo no Explorer
+                                                                                      3. Clicar dentro do editor
+                                                                                      4. Ctrl+A para selecionar tudo
+                                                                                      5. Delete para apagar
+                                                                                      6. Digitar o novo conteudo completo
+                                                                                      7. Ctrl+Shift+G para Source Control
+                                                                                      8. Digitar mensagem de commit
+                                                                                      9. Ctrl+Enter para "Commit e Push"
+                                                                                      10. Aguardar deploy na Vercel (~30-60s)
+
+                                                                                      NAO usar o editor web normal do GitHub (github.com) para TSX/TS
+                                                                                      pois ele introduz aspas inteligentes que quebram o TypeScript.
+
+                                                                                      ================================================================
+                                                                                      FIM DAS MEMORIAS
+                                                                                      ================================================================
