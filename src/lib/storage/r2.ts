@@ -1,38 +1,17 @@
 /**
- * Cloudflare R2 storage adapter.
- * R2 is S3-compatible, so we use the AWS SDK pointed at R2's endpoint.
- *
- * - Uploads use presigned URLs (signed by the server, used by the browser)
- * - Reads use presigned GET URLs that expire (LGPD-friendly)
+ * Supabase Storage adapter — replaces Cloudflare R2.
+ * Uses Supabase service role to upload/download files.
+ * Buckets: "images" (private) — stores originals and results.
  */
+import { createClient } from "@supabase/supabase-js";
 
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+const BUCKET = "images";
 
-const REQUIRED_ENVS = ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET_NAME"] as const;
-
-function ensureEnv() {
-  for (const key of REQUIRED_ENVS) {
-    if (!process.env[key]) throw new Error(`${key} is not set`);
-  }
+function adminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createClient(url, key, { auth: { persistSession: false } });
 }
-
-let _client: S3Client | null = null;
-function client(): S3Client {
-  if (_client) return _client;
-  ensureEnv();
-  _client = new S3Client({
-    region: "auto",
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-    credentials: {
-      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-    },
-  });
-  return _client;
-}
-
-const BUCKET = () => process.env.R2_BUCKET_NAME!;
 
 export type UploadKind = "original" | "result";
 
@@ -44,53 +23,92 @@ export function buildObjectKey(userId: string, kind: UploadKind, ext: string): s
 }
 
 /**
- * Returns a presigned URL the browser can PUT to (direct-to-R2 upload).
+ * Returns a presigned URL the browser can PUT to (upload directly to Supabase Storage).
  */
 export async function getPresignedUploadUrl(
   key: string,
-  contentType: string,
+  _contentType: string,
   expiresInSeconds = 600
 ): Promise<string> {
-  const cmd = new PutObjectCommand({
-    Bucket: BUCKET(),
-    Key: key,
-    ContentType: contentType,
-  });
-  return getSignedUrl(client(), cmd, { expiresIn: expiresInSeconds });
+  const supabase = adminClient();
+  
+  // Ensure bucket exists
+  await ensureBucket();
+
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUploadUrl(key);
+
+  if (error || !data) {
+    throw new Error(`Failed to create upload URL: ${error?.message}`);
+  }
+
+  return data.signedUrl;
 }
 
 /**
- * Returns a presigned GET URL for a stored object (download / IA fetch).
+ * Returns a presigned GET URL for a stored object.
  */
 export async function getPresignedReadUrl(
   key: string,
   expiresInSeconds = 3600
 ): Promise<string> {
-  const cmd = new GetObjectCommand({
-    Bucket: BUCKET(),
-    Key: key,
-  });
-  return getSignedUrl(client(), cmd, { expiresIn: expiresInSeconds });
+  const supabase = adminClient();
+
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrl(key, expiresInSeconds);
+
+  if (error || !data) {
+    throw new Error(`Failed to create read URL: ${error?.message}`);
+  }
+
+  return data.signedUrl;
 }
 
 export async function deleteObject(key: string): Promise<void> {
-  await client().send(new DeleteObjectCommand({ Bucket: BUCKET(), Key: key }));
+  const supabase = adminClient();
+  await supabase.storage.from(BUCKET).remove([key]);
 }
 
 /**
- * Upload a Buffer directly from the server (used when fetching the IA result).
+ * Upload a Buffer directly from the server.
  */
 export async function uploadBuffer(
   key: string,
   buffer: Buffer,
   contentType: string
 ): Promise<void> {
-  await client().send(
-    new PutObjectCommand({
-      Bucket: BUCKET(),
-      Key: key,
-      Body: buffer,
-      ContentType: contentType,
-    })
-  );
+  const supabase = adminClient();
+  await ensureBucket();
+  
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(key, buffer, {
+      contentType,
+      upsert: true,
+    });
+
+  if (error) {
+    throw new Error(`Failed to upload buffer: ${error.message}`);
+  }
+}
+
+// Ensure the bucket exists — creates it if not
+let _bucketEnsured = false;
+async function ensureBucket(): Promise<void> {
+  if (_bucketEnsured) return;
+  const supabase = adminClient();
+  const { data: buckets } = await supabase.storage.listBuckets();
+  const exists = buckets?.some((b) => b.name === BUCKET);
+  if (!exists) {
+    const { error } = await supabase.storage.createBucket(BUCKET, {
+      public: false,
+      fileSizeLimit: 52428800, // 50MB
+    });
+    if (error && !error.message.includes("already exists")) {
+      throw new Error(`Failed to create bucket: ${error.message}`);
+    }
+  }
+  _bucketEnsured = true;
 }
