@@ -8,6 +8,12 @@ const nextConfig = {
   },
   reactStrictMode: true,
   poweredByHeader: false,
+  // Allow large image uploads (up to 26MB body) via API routes
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "26mb",
+    },
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
@@ -15,6 +21,7 @@ const nextConfig = {
       { protocol: "https", hostname: "images.ultraimageai.com" },
       { protocol: "https", hostname: "replicate.delivery" },
       { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "*.supabase.co" },
     ],
   },
   async headers() {
