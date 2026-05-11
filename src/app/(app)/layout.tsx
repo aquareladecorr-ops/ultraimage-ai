@@ -19,7 +19,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-ink text-bone">
       <header className="border-b border-ink-line backdrop-blur-md bg-ink/80 sticky top-0 z-30">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gaph-2">
             <div className="w-7 h-7 relative">
               <div className="absolute inset-0 rounded-sm border border-copper rotate-45" />
               <div className="absolute inset-1 bg-copper rotate-45" />
