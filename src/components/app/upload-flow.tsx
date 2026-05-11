@@ -71,29 +71,20 @@ export function UploadFlow({ availableCredits }: { availableCredits: number }) {
     setProgress("Preparando upload...");
 
     try {
-      // 1. Get presigned URL from our backend
-      setProgress("Solicitando autorização de upload...");
-      const presignResp = await fetch("/api/upload-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          filename: file.file.name,
-          contentType: file.file.type,
-        }),
-      });
-      if (!presignResp.ok) throw new Error("Falha ao iniciar upload");
-      const { uploadUrl, key } = await presignResp.json();
-
-      // 2. Upload directly to R2
+      // 1. Upload imagem pelo servidor (servidor salva no Supabase Storage)
       setProgress("Enviando imagem...");
-      const uploadResp = await fetch(uploadUrl, {
-        method: "PUT",
-        body: file.file,
-        headers: { "Content-Type": file.file.type },
-      });
-      if (!uploadResp.ok) throw new Error("Falha no upload");
+      const uploadResp = await fetch(
+        "/api/upload-url?filename=" + encodeURIComponent(file.file.name),
+        {
+          method: "POST",
+          headers: { "Content-Type": file.file.type },
+          body: file.file,
+        }
+      );
+      if (!uploadResp.ok) throw new Error("Falha no upload da imagem");
+      const { key } = await uploadResp.json();
 
-      // 3. Trigger processing
+      // 2. Trigger processing
       setProgress("Processando com nossa IA... isso pode levar até 40 segundos");
       const processResp = await fetch("/api/process", {
         method: "POST",
