@@ -189,3 +189,16 @@ Supabase
   ================================================================
   FIM DAS MEMORIAS
   ================================================================
+
+----------------------------------------------------------------
+13. REGISTRO DE ATUALIZACOES
+----------------------------------------------------------------
+FORMATO: [DATA HORA] - DESCRICAO DA ALTERACAO
+Regra: NUNCA apagar entradas anteriores. Sempre adicionar abaixo.
+----------------------------------------------------------------
+
+[11/05/2026 - sessao Claude] - Criacao desta secao de registro.
+A partir de agora, toda alteracao no projeto deve ser registrada
+aqui com data, hora e descricao do que foi feito.
+
+================================================================
