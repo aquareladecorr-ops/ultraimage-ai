@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: {
@@ -28,6 +29,14 @@ export const metadata: Metadata = {
                                                           return (
                                                               <html lang="pt-BR" className="dark">
                                                                     <head>
+                                                                                  {/* Google Ads Tag - AW-18172780228 */}
+                                                                                              <Script async src="https://www.googletagmanager.com/gtag/js?id=AW-18172780228" strategy="afterInteractive" />
+                                                                                                          <Script id="google-ads-tag" strategy="afterInteractive">{`
+                                                                                                                        window.dataLayer = window.dataLayer || [];
+                                                                                                                                      function gtag(){dataLayer.push(arguments);}
+                                                                                                                                                    gtag('js', new Date());
+                                                                                                                                                                  gtag('config', 'AW-18172780228');
+                                                                                                                                                                              `}</Script>
                                                                             <link rel="preconnect" href="https://fonts.googleapis.com" />
                                                                                     <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
                                                                                             <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500" rel="stylesheet" />
