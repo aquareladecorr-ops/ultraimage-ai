@@ -1,15 +1,60 @@
-import { createServer } from "@/lib/supabase/server";
+import { createServer, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
-  const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") ?? "/dashboard";
+    const code = url.searchParams.get("code");
+      const next = url.searchParams.get("next") ?? "/dashboard";
 
-  if (code) {
-    const supabase = createServer();
-    await supabase.auth.exchangeCodeForSession(code);
-  }
+        if (code) {
+            const supabase = createServer();
+                const { data } = await supabase.auth.exchangeCodeForSession(code);
 
-  return NextResponse.redirect(new URL(next, url.origin));
-}
+                    // Anti-abuse: registrar IP do cadastro e verificar limite por IP
+                        if (data?.user) {
+                              const userId = data.user.id;
+                                    const isNewUser =
+                                            data.user.created_at &&
+                                                    Math.abs(Date.now() - new Date(data.user.created_at).getTime()) < 60_000;
+
+                                                          if (isNewUser) {
+                                                                  const ip =
+                                                                            request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+                                                                                      request.headers.get("x-real-ip") ??
+                                                                                                "unknown";
+
+                                                                                                        try {
+                                                                                                                  const admin = createAdminClient();
+
+                                                                                                                            // Salvar IP no perfil
+                                                                                                                                      await admin
+                                                                                                                                                  .from("profiles")
+                                                                                                                                                              .update({ signup_ip: ip })
+                                                                                                                                                                          .eq("id", userId);
+
+                                                                                                                                                                                    // Contar quantas contas com welcome_credits já receberam credits neste IP (últimos 60 dias)
+                                                                                                                                                                                              const since = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+                                                                                                                                                                                                        const { count } = await admin
+                                                                                                                                                                                                                    .from("profiles")
+                                                                                                                                                                                                                                .select("id", { count: "exact", head: true })
+                                                                                                                                                                                                                                            .eq("signup_ip", ip)
+                                                                                                                                                                                                                                                        .eq("welcome_credits_granted", true)
+                                                                                                                                                                                                                                                                    .gte("created_at", since);
+
+                                                                                                                                                                                                                                                                              // Se já existe outra conta deste IP que recebeu créditos grátis,
+                                                                                                                                                                                                                                                                                        // marcar este usuário como inelegível (bloqueia o trigger de créditos)
+                                                                                                                                                                                                                                                                                                  if ((count ?? 0) >= 1) {
+                                                                                                                                                                                                                                                                                                              await admin
+                                                                                                                                                                                                                                                                                                                            .from("profiles")
+                                                                                                                                                                                                                                                                                                                                          .update({ welcome_credits_blocked: true })
+                                                                                                                                                                                                                                                                                                                                                        .eq("id", userId);
+                                                                                                                                                                                                                                                                                                                                                                  }
+                                                                                                                                                                                                                                                                                                                                                                          } catch {
+                                                                                                                                                                                                                                                                                                                                                                                    // falha silenciosa — nao bloquear o login por erro interno
+                                                                                                                                                                                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                                                                                                                                                                                                  }
+                                                                                                                                                                                                                                                                                                                                                                                                      }
+                                                                                                                                                                                                                                                                                                                                                                                                        }
+
+                                                                                                                                                                                                                                                                                                                                                                                                          return NextResponse.redirect(new URL(next, url.origin));
+                                                                                                                                                                                                                                                                                                                                                                                                          }
