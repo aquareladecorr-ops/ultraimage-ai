@@ -202,3 +202,17 @@ A partir de agora, toda alteracao no projeto deve ser registrada
 aqui com data, hora e descricao do que foi feito.
 
 ================================================================
+
+[19/05/2026 - sessao Claude] - LANDING PAGE: badge de 5 creditos gratis adicionado.
+Arquivos alterados:
+- src/components/landing/hero.tsx: icone Gift + badge "5 creditos gratis ao criar conta" + texto "Sem cartao - Sem cobranca" ao lado do botao CTA principal.
+- src/components/landing/final-cta.tsx: badge Gift acima do botao "Criar conta gratis" + texto de suporte.
+- src/components/landing/pricing.tsx: banner informativo na secao de planos direcionando novos usuarios ao cadastro.
+
+[19/05/2026 - sessao Claude] - ANTI-ABUSO: sistema de bloqueio de creditos duplicados por IP implementado.
+Arquivos criados/alterados:
+- supabase/migrations/002_anti_abuse_columns.sql: migration que adiciona colunas signup_ip, welcome_credits_granted, welcome_credits_blocked na tabela profiles + funcao SQL revoke_welcome_credits() + indice por IP + atualizacao do trigger handle_new_user.
+- src/app/auth/callback/route.ts: captura IP do request no primeiro login, salva em profiles.signup_ip, conta contas com welcome_credits_granted=true no mesmo IP nos ultimos 60 dias, e chama revoke_welcome_credits() via RPC se detectar duplicata.
+ATENCAO: executar 002_anti_abuse_columns.sql no Supabase SQL Editor para ativar o anti-abuso.
+
+[19/05/2026 - sessao Claude] - GOOGLE ADS: conta criada, tag AW-18172780228 instalada no layout.tsx. Campanha "Campaign #1" Performance Max ativa com orcamento R$106,13/dia. Apos 2 dias: 183 impressoes, 11 cliques, CTR 6,08%, custo R$1,66. Qualidade do grupo de recursos: Ruim - necessita melhorias nos titulos/descricoes.
