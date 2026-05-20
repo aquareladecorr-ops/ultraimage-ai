@@ -216,3 +216,41 @@ Arquivos criados/alterados:
 ATENCAO: executar 002_anti_abuse_columns.sql no Supabase SQL Editor para ativar o anti-abuso.
 
 [19/05/2026 - sessao Claude] - GOOGLE ADS: conta criada, tag AW-18172780228 instalada no layout.tsx. Campanha "Campaign #1" Performance Max ativa com orcamento R$106,13/dia. Apos 2 dias: 183 impressoes, 11 cliques, CTR 6,08%, custo R$1,66. Qualidade do grupo de recursos: Ruim - necessita melhorias nos titulos/descricoes.
+
+[19/05/2026 - sessao Claude - tarde] - MIGRATION 002 executada no Supabase.
+Migration 002_anti_abuse_columns.sql executada com sucesso no SQL Editor do Supabase.
+Colunas adicionadas em profiles: signup_ip, welcome_credits_granted, welcome_credits_blocked.
+Funcoes criadas: revoke_welcome_credits(), handle_new_user() atualizado.
+Confirmado via SELECT information_schema.columns e information_schema.routines.
+
+[19/05/2026 - sessao Claude - tarde] - GOOGLE OAUTH: icone Google adicionado nas paginas de login e signup.
+Arquivos alterados:
+- src/app/(auth)/signup/page.tsx: adicionado GoogleIcon SVG component + funcao handleGoogle() + estado googleLoading + botao "Criar conta com Google".
+- src/app/(auth)/login/page.tsx: adicionado GoogleIcon SVG component ao botao existente de login com Google.
+Ambos os commits deployados e verificados na Vercel (Ready).
+
+[19/05/2026 - sessao Claude - tarde] - GOOGLE ADS: sinais de publico-alvo configurados no Grupo de recursos 1.
+9 segmentos adicionados:
+No mercado (outros): fotos de fotografos profissionais, fotografos profissionais, design grafico, criacao de identidade visual, empresas de e-commerce, marketing digital e e-commerce.
+Afinidade: Tecnologia, Usuarios avancados de servicos em nuvem.
+No mercado: Imobiliarias.
+Status: Salvo com sucesso.
+
+[19/05/2026 - sessao Claude - tarde] - CREDITOS BOAS-VINDAS REMOVIDOS + PACOTE credito_unico ADICIONADO.
+Motivacao: remover creditos gratuitos de cadastro (facilita abuso) e adicionar opcao de entrada de R$2,58.
+Migration 003 executada no Supabase: handle_new_user() atualizado para credits_available=0, sem bonus de cadastro.
+Arquivos alterados:
+- src/config/packages.ts: adicionado credito_unico (1 credito, R$2,58, sem fullPriceBrl, sem isLaunchPromo) no topo de ONE_TIME_PACKAGES.
+- src/app/auth/callback/route.ts: simplificado para apenas exchangeCodeForSession, removida toda a logica anti-abuso de IP.
+- src/app/(auth)/signup/page.tsx: texto "Cinco creditos gratis." -> "Comece agora." e subtexto atualizado.
+- src/components/landing/hero.tsx: removido Gift import e badge "creditos gratis", adicionado "A partir de R$ 2,58 por imagem".
+- src/components/landing/final-cta.tsx: removido Gift import e badge, adicionado "A partir de R$ 2,58 por imagem . Pix . Cartao . Boleto".
+Todos os 5 commits deployados e verificados na Vercel (Ready).
+PENDENTE: criar produto credito_unico no painel do Mercado Pago (R$2,58, 1 credito).
+PENDENTE: verificar pricing.tsx se ainda tem banner de creditos gratis da sessao anterior.
+
+[19/05/2026 - sessao Claude - tarde] - CONTAS DE USUARIOS: consultado via SQL no Supabase.
+Total de contas em auth.users: 16 (13 criadas em 19/05/2026).
+Dado obtido via SELECT COUNT(*) e SELECT email, created_at FROM auth.users ORDER BY created_at DESC.
+
+================================================================
