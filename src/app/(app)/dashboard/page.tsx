@@ -2,6 +2,7 @@ import { createServer } from "@/lib/supabase/server";
 import Link from "next/link";
 import { ArrowUpRight, Image as ImageIcon, Plus } from "lucide-react";
 import { formatDate, bytesToReadable } from "@/lib/utils";
+import { SignupTracker } from "@/components/app/signup-tracker";
 
 export default async function DashboardPage() {
   const supabase = createServer();
@@ -11,7 +12,7 @@ export default async function DashboardPage() {
   const [{ data: profile }, { data: recentJobs }, { data: recentTx }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("full_name, credits_available, credits_reserved, total_credits_used")
+      .select("full_name, credits_available, credits_reserved, total_credits_used, created_at")
       .eq("id", userId)
       .single(),
     supabase
@@ -35,6 +36,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-12 md:py-16">
+      <SignupTracker createdAt={profile?.created_at ?? ""} />
       <div className="mb-12">
         <div className="text-xs uppercase tracking-[0.3em] text-copper mb-3 font-mono">§ Painel</div>
         <h1 className="font-display leading-[0.95] tracking-editorial" style={{ fontWeight: 300, fontSize: "clamp(36px, 5vw, 64px)" }}>
