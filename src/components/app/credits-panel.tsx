@@ -49,7 +49,7 @@ type Props = {
                                                                                                   try {
                                                                                                         const res = await fetch("/api/sync-payment", { method: "POST" });
                                                                                                               const data = await res.json();
-                                                                                                                    if (data.credited > 0) {
+                                                                                                                    if (data.credited > 0) {          if (typeof window !== 'undefined' && (window as any).gtag) { (window as any).gtag('event', 'conversion', { send_to: 'AW-18172780228/ZwssCIHdz7AcEMS9ut1D', value: data.creditedCount, currency: 'BRL' }); }
                                                                                                                             setSyncMsg(`+${data.credited} creditos adicionados!`);
                                                                                                                                     setLocalCredits((c) => c + data.credited);
                                                                                                                                             setTimeout(() => router.refresh(), 1500);
