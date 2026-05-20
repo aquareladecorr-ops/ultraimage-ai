@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, Gift } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 export function FinalCta() {
   return (
@@ -13,31 +13,26 @@ export function FinalCta() {
                                                   className="font-display leading-[0.92] tracking-editorial mb-10"
                                                             style={{ fontWeight: 300, fontSize: "clamp(48px, 8vw, 112px)" }}
                                                                     >
-                                                                              Sua próxima foto<br />
+                                                                              Sua proxima foto<br />
                                                                                         <em className="italic text-copper">vai impressionar.</em>
                                                                                                 </h2>
 
                                                                                                         <div className="flex flex-col items-center gap-5">
-                                                                                                                  <div className="inline-flex items-center gap-2 bg-copper/10 border border-copper/30 px-5 py-2.5 text-sm font-mono text-copper">
-                                                                                                                              <Gift size={15} />
-                                                                                                                                          5 créditos grátis ao criar conta · Sem cartão · Sem cobrança
-                                                                                                                                                    </div>
+                                                                                                                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                                                                                                                              <Link
+                                                                                                                                            href="/signup"
+                                                                                                                                                          className="group inline-flex items-center gap-3 bg-bone text-ink px-8 py-4 text-base font-medium hover:bg-copper transition-colors"
+                                                                                                                                                                      >
+                                                                                                                                                                                    Criar conta
+                                                                                                                                                                                                  <ArrowUpRight size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                                                                                                                                                                                              </Link>
+                                                                                                                                                                                                                        </div>
 
-                                                                                                                                                              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                                                                                                                                                                          <Link
-                                                                                                                                                                                        href="/signup"
-                                                                                                                                                                                                      className="group inline-flex items-center gap-3 bg-bone text-ink px-8 py-4 text-base font-medium hover:bg-copper transition-colors"
-                                                                                                                                                                                                                  >
-                                                                                                                                                                                                                                Criar conta grátis
-                                                                                                                                                                                                                                              <ArrowUpRight size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                                                                                                                                                                                                                                                          </Link>
-                                                                                                                                                                                                                                                                    </div>
-
-                                                                                                                                                                                                                                                                              <p className="text-xs text-bone-dim font-mono">
-                                                                                                                                                                                                                                                                                          Pix · Cartão · Boleto
-                                                                                                                                                                                                                                                                                                    </p>
-                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                                                  </div>
-                                                                                                                                                                                                                                                                                                                      </section>
-                                                                                                                                                                                                                                                                                                                        );
-                                                                                                                                                                                                                                                                                                                        }
+                                                                                                                                                                                                                                  <p className="text-xs text-bone-dim font-mono">
+                                                                                                                                                                                                                                              A partir de R$ 2,58 por imagem · Pix · Cartao · Boleto
+                                                                                                                                                                                                                                                        </p>
+                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                                      </div>
+                                                                                                                                                                                                                                                                          </section>
+                                                                                                                                                                                                                                                                            );
+                                                                                                                                                                                                                                                                            }
