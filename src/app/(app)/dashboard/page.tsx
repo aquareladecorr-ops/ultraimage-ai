@@ -1,4 +1,4 @@
-import { createServer } from "@/lib/supabase/server";
+import { createServer, createAdminClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { ArrowUpRight, Image as ImageIcon, Plus } from "lucide-react";
 import { formatDate, bytesToReadable } from "@/lib/utils";
@@ -6,22 +6,23 @@ import { SignupTracker } from "@/components/app/signup-tracker";
 
 export default async function DashboardPage() {
   const supabase = createServer();
+  const admin = createAdminClient();
   const { data: auth } = await supabase.auth.getUser();
   const userId = auth.user!.id;
 
   const [{ data: profile }, { data: recentJobs }, { data: recentTx }] = await Promise.all([
-    supabase
+    admin
       .from("profiles")
       .select("full_name, credits_available, credits_reserved, total_credits_used, created_at")
       .eq("id", userId)
       .single(),
-    supabase
+    admin
       .from("image_jobs")
       .select("id, original_filename, target_resolution_tier, status, created_at, original_size_bytes")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(8),
-    supabase
+    admin
       .from("credit_transactions")
       .select("type, amount, description, created_at")
       .eq("user_id", userId)
@@ -39,7 +40,10 @@ export default async function DashboardPage() {
       <SignupTracker createdAt={profile?.created_at ?? ""} />
       <div className="mb-12">
         <div className="text-xs uppercase tracking-[0.3em] text-copper mb-3 font-mono">§ Painel</div>
-        <h1 className="font-display leading-[0.95] tracking-editorial" style={{ fontWeight: 300, fontSize: "clamp(36px, 5vw, 64px)" }}>
+        <h1
+          className="font-display leading-[0.95] tracking-editorial"
+          style={{ fontWeight: 300, fontSize: "clamp(36px, 5vw, 64px)" }}
+        >
           Olá{firstName ? `, ${firstName}` : ""}.<br />
           <em className="italic text-copper">Vamos processar.</em>
         </h1>
@@ -70,116 +74,92 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick actions */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-16">
-        <Link href="/upload" className="group inline-flex items-center gap-3 bg-bone text-ink px-6 py-3 font-medium hover:bg-copper transition">
+      {/* Actions */}
+      <div className="flex flex-wrap gap-4 mb-16">
+        <Link
+          href="/upload"
+          className="inline-flex items-center gap-3 bg-copper text-ink px-6 py-3 hover:bg-copper/90 transition text-sm font-mono"
+        >
           <Plus size={16} />
           Processar nova imagem
-          <ArrowUpRight size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          <ArrowUpRight size={16} />
         </Link>
-        <Link href="/credits" className="inline-flex items-center gap-3 border border-ink-line px-6 py-3 hover:border-copper transition">
+        <Link
+          href="/credits"
+          className="inline-flex items-center gap-3 border border-ink-line px-6 py-3 hover:border-copper transition text-sm font-mono"
+        >
           Comprar mais créditos
         </Link>
       </div>
 
       {/* Recent jobs */}
-      <div className="grid md:grid-cols-12 gap-12 mb-16">
-        <section className="md:col-span-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display text-2xl" style={{ fontWeight: 400 }}>
-              Imagens recentes
-            </h2>
-            {recentJobs && recentJobs.length > 0 && (
-              <Link href="/dashboard" className="text-sm text-bone-dim hover:text-copper transition">
-                Ver tudo
-              </Link>
-            )}
+      <section className="mb-16" aria-label="Imagens recentes">
+        <h2 className="text-xs uppercase tracking-[0.3em] text-copper mb-6 font-mono">Imagens recentes</h2>
+        {!recentJobs || recentJobs.length === 0 ? (
+          <div className="border border-ink-line p-8 text-center text-bone-dim text-sm font-mono">
+            Você ainda não processou nenhuma imagem.{" "}
+            <Link href="/upload" className="text-copper hover:underline">
+              Processar a primeira &rarr;
+            </Link>
           </div>
-
-          {!recentJobs || recentJobs.length === 0 ? (
-            <div className="border border-dashed border-ink-line p-12 text-center">
-              <ImageIcon size={32} strokeWidth={1} className="mx-auto text-bone-dim mb-4" />
-              <p className="text-bone-dim mb-6">Você ainda não processou nenhuma imagem.</p>
-              <Link href="/upload" className="inline-flex items-center gap-2 text-copper hover:underline">
-                Processar a primeira →
-              </Link>
-            </div>
-          ) : (
-            <div className="border border-ink-line">
-              {recentJobs.map((job, i) => (
-                <Link
-                  href={`/result/${job.id}`}
-                  key={job.id}
-                  className={`flex items-center justify-between gap-4 p-4 hover:bg-ink-card transition ${
-                    i < recentJobs.length - 1 ? "border-b border-ink-line" : ""
+        ) : (
+          <div className="border border-ink-line divide-y divide-ink-line">
+            {recentJobs.map((job) => (
+              <div key={job.id} className="flex items-center justify-between px-6 py-4 hover:bg-ink-deep transition">
+                <div className="flex items-center gap-4">
+                  <ImageIcon size={16} className="text-bone-dim flex-shrink-0" />
+                  <div>
+                    <div className="text-sm font-mono text-bone truncate max-w-[200px] md:max-w-xs">
+                      {job.original_filename ?? "imagem"}
+                    </div>
+                    <div className="text-xs text-bone-dim font-mono mt-0.5">
+                      {job.target_resolution_tier} &middot;{" "}
+                      {job.original_size_bytes ? bytesToReadable(job.original_size_bytes) : "—"} &middot;{" "}
+                      {formatDate(job.created_at)}
+                    </div>
+                  </div>
+                </div>
+                <span
+                  className={`text-xs font-mono px-2 py-0.5 border ${
+                    job.status === "completed"
+                      ? "border-green-800 text-green-400"
+                      : job.status === "failed"
+                      ? "border-red-800 text-red-400"
+                      : "border-ink-line text-bone-dim"
                   }`}
                 >
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-10 h-10 bg-ink-deep border border-ink-line flex items-center justify-center flex-shrink-0">
-                      <ImageIcon size={16} className="text-bone-dim" strokeWidth={1.25} />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-bone truncate text-sm">{job.original_filename ?? "imagem.jpg"}</div>
-                      <div className="text-xs text-bone-dim font-mono mt-0.5">
-                        {job.target_resolution_tier?.toUpperCase()} ·{" "}
-                        {job.original_size_bytes ? bytesToReadable(job.original_size_bytes) : "—"} ·{" "}
-                        {formatDate(job.created_at)}
-                      </div>
-                    </div>
-                  </div>
-                  <StatusBadge status={job.status} />
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
+                  {job.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
-        <section className="md:col-span-4">
-          <h2 className="font-display text-2xl mb-6" style={{ fontWeight: 400 }}>
-            Movimentação
-          </h2>
-          {!recentTx || recentTx.length === 0 ? (
-            <p className="text-sm text-bone-dim">Sem movimentação recente.</p>
-          ) : (
-            <ul className="space-y-3">
-              {recentTx.map((tx, i) => (
-                <li key={i} className="flex items-start justify-between gap-3 text-sm border-b border-ink-line pb-3">
-                  <div className="min-w-0">
-                    <div className="text-bone truncate">{tx.description ?? tx.type}</div>
-                    <div className="text-xs text-bone-dim font-mono mt-0.5">{formatDate(tx.created_at)}</div>
-                  </div>
-                  <span className={`font-mono text-sm ${tx.amount > 0 ? "text-copper" : "text-bone-dim"}`}>
-                    {tx.amount > 0 ? "+" : ""}
-                    {tx.amount}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
+      {/* Recent transactions */}
+      <section aria-label="Movimentação">
+        <h2 className="text-xs uppercase tracking-[0.3em] text-copper mb-6 font-mono">Movimentação</h2>
+        {!recentTx || recentTx.length === 0 ? (
+          <div className="border border-ink-line p-8 text-center text-bone-dim text-sm font-mono">
+            Sem movimentação recente.
+          </div>
+        ) : (
+          <div className="border border-ink-line divide-y divide-ink-line">
+            {recentTx.map((tx, i) => (
+              <div key={i} className="flex items-center justify-between px-6 py-4">
+                <div>
+                  <div className="text-sm font-mono text-bone">{tx.description ?? tx.type}</div>
+                  <div className="text-xs text-bone-dim font-mono mt-0.5">{formatDate(tx.created_at)}</div>
+                </div>
+                <span className={`text-sm font-mono ${tx.amount > 0 ? "text-green-400" : "text-red-400"}`}>
+                  {tx.amount > 0 ? "+" : ""}
+                  {tx.amount} crédito{Math.abs(tx.amount) !== 1 ? "s" : ""}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    completed: "text-copper border-copper/40",
-    processing: "text-bone border-bone/40 animate-pulse",
-    pending: "text-bone-dim border-ink-line",
-    failed: "text-copper-deep border-copper-deep/40",
-    canceled: "text-bone-dim border-ink-line",
-  };
-  const labels: Record<string, string> = {
-    completed: "pronto",
-    processing: "processando",
-    pending: "na fila",
-    failed: "falhou",
-    canceled: "cancelado",
-  };
-  return (
-    <span className={`text-xs uppercase tracking-[0.2em] px-2 py-1 border font-mono flex-shrink-0 ${styles[status] ?? styles.pending}`}>
-      {labels[status] ?? status}
-    </span>
-  );
-}
+        }
