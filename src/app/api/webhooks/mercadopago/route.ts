@@ -11,98 +11,140 @@ import { getMpPayment, mapMpStatus } from "@/lib/payments/mercadopago";
 import { addCreditsFromPayment } from "@/lib/credits/transactions";
 import { sendPaymentApprovedEmail } from "@/lib/email/resend";
 
-export async function POST(req: Request) {
-  let payload: { type?: string; data?: { id?: string | number } } = {};
-  try {
-    payload = await req.json();
-  } catch {
-    return NextResponse.json({ ok: false }, { status: 400 });
+// ─── Google Ads server-side conversion ───────────────────────────────────────
+async function reportGoogleAdsConversion(amountBrl: number) {
+    const conversionId = "AW-18172780228";
+    const conversionLabel = "cpfSCIjB87EcEMS9ut1D";
+    const apiSecret = process.env.GOOGLE_ADS_API_SECRET;
+    const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
+  // If env vars are missing, log and skip — don't break the webhook
+  if (!apiSecret || !measurementId) {
+        console.warn("[google-ads] GOOGLE_ADS_API_SECRET or NEXT_PUBLIC_GA_MEASUREMENT_ID not set — skipping server-side conversion");
+        return;
   }
+
+  const payload = {
+        client_id: "server-side-webhook",
+        events: [
+          {
+                    name: "conversion",
+                    params: {
+                                send_to: `${conversionId}/${conversionLabel}`,
+                                value: amountBrl,
+                                currency: "BRL",
+                    },
+          },
+              ],
+  };
+
+  try {
+        const res = await fetch(
+                `https://www.google-analytics.com/mp/collect?measurement_id=${measurementId}&api_secret=${apiSecret}`,
+          {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+          }
+              );
+        console.log("[google-ads] conversion reported, status:", res.status);
+  } catch (err) {
+        console.error("[google-ads] failed to report conversion:", err);
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function POST(req: Request) {
+    let payload: { type?: string; data?: { id?: string | number } } = {};
+    try {
+          payload = await req.json();
+    } catch {
+          return NextResponse.json({ ok: false }, { status: 400 });
+    }
 
   // We only care about `payment` events
   if (payload.type !== "payment" || !payload.data?.id) {
-    return NextResponse.json({ ok: true, ignored: true });
+        return NextResponse.json({ ok: true, ignored: true });
   }
 
   const mpPaymentId = String(payload.data.id);
-  const admin = createAdminClient();
+    const admin = createAdminClient();
 
   try {
-    // Fetch full payment from MP API (webhooks only contain id)
-    const mp = await getMpPayment(mpPaymentId);
-    const externalRef = mp.external_reference;
-    if (!externalRef) {
-      return NextResponse.json({ ok: false, reason: "missing_external_reference" }, { status: 400 });
-    }
+        // Fetch full payment from MP API (webhooks only contain id)
+      const mp = await getMpPayment(mpPaymentId);
+        const externalRef = mp.external_reference;
+        if (!externalRef) {
+                return NextResponse.json({ ok: false, reason: "missing_external_reference" }, { status: 400 });
+        }
 
-    const internalStatus = mapMpStatus(mp.status);
+      const internalStatus = mapMpStatus(mp.status);
 
-    // Find our pending payment record
-    const { data: payment, error: findErr } = await admin
-      .from("payments")
-      .select("*")
-      .eq("id", externalRef)
-      .single();
+      // Find our pending payment record
+      const { data: payment, error: findErr } = await admin
+          .from("payments")
+          .select("*")
+          .eq("id", externalRef)
+          .single();
 
-    if (findErr || !payment) {
-      return NextResponse.json({ ok: false, reason: "payment_not_found" }, { status: 404 });
-    }
-
-    // Idempotency: don't credit twice
-    if (payment.status === "approved" && payment.credited_at) {
-      return NextResponse.json({ ok: true, alreadyCredited: true });
-    }
-
-    // Update payment record
-    await admin
-      .from("payments")
-      .update({
-        mp_payment_id: mpPaymentId,
-        mp_status: mp.status,
-        status: internalStatus,
-        payment_method: mp.payment_method_id ?? null,
-        raw_payload: mp as unknown as Record<string, unknown>,
-      })
-      .eq("id", payment.id);
-
-    // Credit user only on approved
-    if (internalStatus === "approved") {
-      await addCreditsFromPayment({
-        userId: payment.user_id,
-        amount: payment.credits_purchased,
-        paymentId: payment.id,
-        description: `Compra de ${payment.package_name} (${payment.credits_purchased} créditos)`,
-      });
-
-      await admin
-        .from("payments")
-        .update({ credited_at: new Date().toISOString() })
-        .eq("id", payment.id);
-
-      // Notify user
-      const { data: profile } = await admin
-        .from("profiles")
-        .select("email")
-        .eq("id", payment.user_id)
-        .single();
-
-      if (profile?.email) {
-        sendPaymentApprovedEmail({
-          to: profile.email,
-          packageName: payment.package_name,
-          credits: payment.credits_purchased,
-          amount: Number(payment.amount_brl),
-        }).catch(console.error);
+      if (findErr || !payment) {
+              return NextResponse.json({ ok: false, reason: "payment_not_found" }, { status: 404 });
       }
-    }
 
-    return NextResponse.json({ ok: true });
+      // Idempotency: don't credit twice
+      if (payment.status === "approved" && payment.credited_at) {
+              return NextResponse.json({ ok: true, alreadyCredited: true });
+      }
+
+      // Update payment record
+      await admin
+          .from("payments")
+          .update({
+                    mp_payment_id: mpPaymentId,
+                    mp_status: mp.status,
+                    status: internalStatus,
+                    payment_method: mp.payment_method_id ?? null,
+                    raw_payload: mp as unknown as Record<string, unknown>,
+          })
+          .eq("id", payment.id);
+
+      // Credit user only on approved
+      if (internalStatus === "approved") {
+              await addCreditsFromPayment({
+                        userId: payment.user_id,
+                        amount: payment.credits_purchased,
+                        paymentId: payment.id,
+                        description: `Compra de ${payment.package_name} (${payment.credits_purchased} créditos)`,
+              });
+
+          await admin
+                .from("payments")
+                .update({ credited_at: new Date().toISOString() })
+                .eq("id", payment.id);
+
+          // Report conversion to Google Ads server-side (always fires, regardless of user browser)
+          await reportGoogleAdsConversion(Number(payment.amount_brl));
+
+          // Notify user
+          const { data: profile } = await admin
+                .from("profiles")
+                .select("email")
+                .eq("id", payment.user_id)
+                .single();
+
+          if (profile?.email) {
+                    sendPaymentApprovedEmail({
+                                to: profile.email,
+                                packageName: payment.package_name,
+                                credits: payment.credits_purchased,
+                                amount: Number(payment.amount_brl),
+                    }).catch(console.error);
+          }
+      }
+
+      return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("[mercadopago webhook]", err);
-    return NextResponse.json({ ok: false }, { status: 500 });
+        console.error("[mercadopago webhook]", err);
+        return NextResponse.json({ ok: false }, { status: 500 });
   }
-}
-
-export async function GET() {
-  return NextResponse.json({ ok: true, info: "Mercado Pago webhook endpoint" });
 }
