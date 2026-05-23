@@ -6,7 +6,7 @@ import { ONE_TIME_PACKAGES, formatBrl } from "@/config/packages";
 import { formatDate } from "@/lib/utils";
 
 type Props = {
-  availableCredits: number;
+  availableCredits: number;h
     totalPurchased: number;
       paymentStatus: string | null;
         preSelectedPackageId: string | null;
@@ -42,6 +42,16 @@ type Props = {
                                                                                   const [localCredits, setLocalCredits] = useState(availableCredits);
 
                                                                                     const hasPending = payments.some((p) => p.status === "pending");
+
+  // Dispara conversão Google Ads automaticamente ao chegar na página com status=success
+  useEffect(() => {
+    if (paymentStatus === 'success' && typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'conversion', {
+        send_to: 'AW-18172780228/ZwssCIHdz7AcEMS9ut1D',
+        currency: 'BRL',
+      });
+    }
+  }, [paymentStatus]);
 
                                                                                       const syncPayments = useCallback(async () => {
                                                                                           setSyncing(true);
