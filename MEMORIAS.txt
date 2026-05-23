@@ -553,3 +553,57 @@ METRICAS CAPTURADAS (20/05/2026):
 - Receita confirmada: R$25.80 (2 pagamentos aprovados)
 
 ================================================================
+
+================================================================
+
+SESSAO 23/05/2026 - CORRECAO TRACKING GOOGLE ADS + GA4 SETUP
+
+================================================================
+
+PROBLEMA INVESTIGADO:
+- Venda de R$2.58 (Pix) em 23/05 as 12:06 nao apareceu no Google Ads
+- Causa raiz: gtag client-side so dispara quando usuario retorna a pagina de
+  sucesso com ?paymentStatus=success - usuarios Pix raramente retornam
+
+VENDAS CONFIRMADAS NO BANCO (pagamentos aprovados, horario BRT):
+1. 23/05 12:06 - R$2.58 - 1 Credito - Pix - isabelps365@gmail.com
+2. 22/05 20:56 - R$2.58 - 1 Credito - Pix - isabelps365@gmail.com
+3. 22/05 16:13 - R$2.58 - 1 Credito - Pix - thannhayato@gmail.com
+4. 22/05 16:12 - R$2.58 - 1 Credito - Pix - thannhayato@gmail.com
+5. 22/05 16:09 - R$2.58 - 1 Credito - Pix - thannhayato@gmail.com
+6. 22/05 14:12 - R$2.58 - 1 Credito - Pix - isabelps365@gmail.com
+7. 22/05 13:57 - R$2.58 - 1 Credito - Pix - isabelps365@gmail.com
+8. 20/05 18:02 - R$12.90 - Avulso - Pix - aqureladecor@gmail.com
+Total: 8 vendas aprovadas, R$30.06
+
+SOLUCAO IMPLEMENTADA:
+- Adicionado reportGoogleAdsConversion() no webhook do Mercado Pago
+- Arquivo: src/app/api/webhooks/mercadopago/route.ts
+- Usa Google Measurement Protocol (server-side)
+- Dispara apos pagamento aprovado, independente do usuario voltar ao site
+- Commit: 16ecda5 "feat: add Google Ads server-side conversion via webhook"
+
+CONVERSOES GOOGLE ADS (confirmados):
+- Compra (2): AW-18172780228/cpfSCIjB87EcEMS9ut1D (ativa)
+- Cadastro: AW-18172780228/WiZOCP7cz7AcEMS9ut1D
+
+GOOGLE ANALYTICS 4 - NOVA PROPRIEDADE CRIADA:
+- Nome: UltraImage AI
+- Conta GA: Aquarela Decor (aquareladecorr@gmail.com)
+- Stream Web: https://ultraimageai.com
+- Stream ID: 14933958193
+- Measurement ID: G-0Z9JRLG9E8
+- API Secret (webhook): kuFiGym4QYCpvKoJ
+
+VARIAVEIS DE AMBIENTE ADICIONADAS NO VERCEL:
+- NEXT_PUBLIC_GA_MEASUREMENT_ID = G-0Z9JRLG9E8
+- GOOGLE_ADS_API_SECRET = kuFiGym4QYCpvKoJ
+- Redeploy realizado: CiPUDVHia (deploy bem-sucedido)
+
+COMO VERIFICAR FUNCIONAMENTO:
+- Apos proxima venda aprovada, checar logs do Vercel
+- Procurar: [google-ads] conversion reported, status: 204
+
+NOTA IMPORTANTE - CAMPANHA:
+- Status: Aprendizagem ativa - NAO ALTERAR configuracoes da campanha
+- Google Ads Account Tag: AW-18172780228
