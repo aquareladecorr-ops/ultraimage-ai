@@ -47,7 +47,7 @@ type Props = {
   useEffect(() => {
     if (paymentStatus === 'success' && typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'conversion', {
-        send_to: 'AW-18172780228/ZwssCIHdz7AcEMS9ut1D',
+        send_to: 'AW-18172780228/cpfSCIjB87EcEMS9ut1D',
         currency: 'BRL',
       });
     }
@@ -59,7 +59,7 @@ type Props = {
                                                                                                   try {
                                                                                                         const res = await fetch("/api/sync-payment", { method: "POST" });
                                                                                                               const data = await res.json();
-                                                                                                                    if (data.credited > 0) {          if (typeof window !== 'undefined' && (window as any).gtag) { (window as any).gtag('event', 'conversion', { send_to: 'AW-18172780228/ZwssCIHdz7AcEMS9ut1D', value: data.creditedCount, currency: 'BRL' }); }
+                                                                                                                    if (data.credited > 0) {          if (typeof window !== 'undefined' && (window as any).gtag) { (window as any).gtag('event', 'conversion', { send_to: 'AW-18172780228/cpfSCIjB87EcEMS9ut1D', value: data.creditedCount, currency: 'BRL' }); }
                                                                                                                             setSyncMsg(`+${data.credited} creditos adicionados!`);
                                                                                                                                     setLocalCredits((c) => c + data.credited);
                                                                                                                                             setTimeout(() => router.refresh(), 1500);
