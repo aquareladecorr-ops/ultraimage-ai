@@ -8,7 +8,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const supabase = await createServer();
   const admin = createAdminClient();
   const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) redirect("/login");
+  if (!auth.user) redirect("/login?next=%2Fupload");
 
   const { data: profile } = await admin
     .from("profiles")
