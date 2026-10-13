@@ -4,10 +4,10 @@ export function Benefits() {
   const items = [
     { icon: Aperture, t: "IA treinada para fotografia", d: "Modelo treinado em milhões de fotografias reais. Preserva grão, pele, textura — sem o aspecto plástico de IA genérica." },
     { icon: Layers, t: "Até 100 megapixels", d: "Saída até 10000×10000. Suficiente para canvas de 2 metros, álbuns premium e impressão offset." },
-    { icon: Zap, t: "15 segundos por foto", d: "GPU dedicada. Sem fila quando você é assinante Pro ou Business." },
+    { icon: Zap, t: "Processamento local", d: "As imagens são processadas pelo agente local conectado ao serviço." },
     { icon: ShieldCheck, t: "Privacidade total", d: "URLs assinadas, retenção de 7 dias, exclusão sob demanda. LGPD por desenho." },
     { icon: Headphones, t: "Suporte em português", d: "WhatsApp, e-mail e atendimento humano. Não é chatbot — é gente." },
-    { icon: Sparkles, t: "Pague em real, com Pix", d: "Sem conversão de moeda. Sem IOF. Pix instantâneo ou cartão em até 3x sem juros." },
+    { icon: Sparkles, t: "Grátis nesta fase", d: "Melhore imagens sem pagamento enquanto aprimoramos o serviço." },
   ];
 
   return (

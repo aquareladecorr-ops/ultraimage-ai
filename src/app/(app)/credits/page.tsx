@@ -1,5 +1,6 @@
 import { createServer, createAdminClient } from "@/lib/supabase/server";
 import { CreditsPanel } from "@/components/app/credits-panel";
+import { BILLING_ENABLED } from "@/config/billing";
 
 export default async function CreditsPage({
   searchParams,
@@ -11,6 +12,17 @@ export default async function CreditsPage({
   const admin = createAdminClient();
   const { data: auth } = await supabase.auth.getUser();
   const userId = auth.user!.id;
+
+  if (!BILLING_ENABLED) {
+    return (
+      <div className="max-w-3xl mx-auto px-6 md:px-10 py-20 text-center">
+        <div className="text-xs uppercase tracking-[0.3em] text-copper mb-4 font-mono">§ Acesso grátis</div>
+        <h1 className="font-display text-4xl mb-5" style={{ fontWeight: 300 }}>Melhore imagens sem cobrança.</h1>
+        <p className="text-bone-dim mb-8">O sistema de créditos e pagamentos está temporariamente desativado.</p>
+        <a href="/upload" className="inline-block bg-bone text-ink px-6 py-3 hover:bg-copper transition">Processar imagem</a>
+      </div>
+    );
+  }
 
   const [{ data: profile }, { data: payments }, { data: transactions }] =
     await Promise.all([

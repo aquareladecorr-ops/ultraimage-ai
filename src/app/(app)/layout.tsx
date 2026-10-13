@@ -2,6 +2,7 @@ import { createServer, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SignOutButton } from "@/components/app/sign-out-button";
+import { BILLING_ENABLED } from "@/config/billing";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createServer();
@@ -35,21 +36,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <nav className="hidden md:flex items-center gap-8 text-sm text-bone-dim">
             <Link href="/dashboard" className="hover:text-bone transition">Painel</Link>
             <Link href="/upload" className="hover:text-bone transition">Processar</Link>
-            <Link href="/credits" className="hover:text-bone transition">Créditos</Link>
+            {BILLING_ENABLED ? <Link href="/credits" className="hover:text-bone transition">Créditos</Link> : <span className="text-copper">Acesso grátis</span>}
             {profile?.is_admin && (
               <Link href="/admin" className="hover:text-copper transition">Admin</Link>
             )}
           </nav>
 
           <div className="flex items-center gap-4">
-            <Link
+            {BILLING_ENABLED && <Link
               href="/credits"
               className="hidden sm:flex items-center gap-2 px-3 py-1.5 border border-ink-line hover:border-copper transition text-sm font-mono"
             >
               <span className="text-copper">✦</span>
               <span>{profile?.credits_available ?? 0}</span>
               <span className="text-bone-dim">créditos</span>
-            </Link>
+            </Link>}
             <SignOutButton />
           </div>
         </div>

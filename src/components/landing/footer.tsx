@@ -14,12 +14,12 @@ export function Footer() {
               </span>
             </div>
             <p className="text-bone-dim leading-relaxed max-w-md mb-6">
-              A primeira plataforma brasileira de upscale premium com IA. Feita por brasileiros, em português, com pagamento em real.
+              Melhoramento de imagens com IA, em português. O serviço está gratuito durante esta fase de aprimoramento.
             </p>
           </div>
 
           {[
-            { title: "Produto", links: ["Como funciona", "Planos", "API (em breve)", "Status"] },
+            { title: "Produto", links: ["Como funciona", "Acesso grátis", "API (em breve)", "Status"] },
             { title: "Suporte", links: ["Central de ajuda", "WhatsApp", "contato@"] },
             { title: "Legal", links: ["Termos de uso", "Privacidade", "Reembolso", "LGPD"] },
           ].map((col, i) => (

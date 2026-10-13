@@ -3,10 +3,14 @@ import { z } from "zod";
 import { createServer, createAdminClient } from "@/lib/supabase/server";
 import { getPackageById } from "@/config/packages";
 import { createCheckoutSession } from "@/lib/payments/mercadopago";
+import { BILLING_ENABLED } from "@/config/billing";
 
 const BodySchema = z.object({ packageId: z.string().min(1) });
 
 export async function POST(req: Request) {
+  if (!BILLING_ENABLED) {
+    return NextResponse.json({ error: "billing_disabled" }, { status: 503 });
+  }
   const supabase = await createServer();
     const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });

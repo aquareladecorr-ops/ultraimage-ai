@@ -17,7 +17,7 @@ export function Nav() {
 
         <div className="hidden md:flex items-center gap-8 text-sm text-bone-dim">
           <a href="#como" className="hover:text-bone transition">Como funciona</a>
-          <a href="#planos" className="hover:text-bone transition">Planos</a>
+          <a href="#planos" className="hover:text-bone transition">Grátis</a>
           <a href="#faq" className="hover:text-bone transition">Dúvidas</a>
         </div>
 

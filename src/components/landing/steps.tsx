@@ -1,8 +1,8 @@
 export function Steps() {
   const steps = [
     { n: "01", t: "Envie sua imagem", d: "Arraste e solte. JPG, PNG ou WebP até 25 MB. Sua imagem é criptografada em trânsito e armazenada com URL assinada.", tag: "Upload" },
-    { n: "02", t: "Escolha a resolução", d: "De 4 MP a 100 MP de saída. O sistema mostra exatamente quantos créditos serão usados antes de processar.", tag: "Configuração" },
-    { n: "03", t: "Receba em segundos", d: "Nossa IA processa em ~15 segundos. Download direto, com aviso por e-mail. Histórico fica no painel por 7 dias.", tag: "Resultado" },
+    { n: "02", t: "Escolha a resolução", d: "Selecione o nível de ampliação. Durante esta fase, o processamento é gratuito e não usa créditos.", tag: "Configuração" },
+    { n: "03", t: "Receba o resultado", d: "O agente local processa a imagem e o resultado aparece no seu painel para baixar. O histórico fica disponível por 7 dias.", tag: "Resultado" },
   ];
 
   return (
