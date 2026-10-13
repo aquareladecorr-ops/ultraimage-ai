@@ -1,10 +1,10 @@
-# Agente local UltraImage (RTX 5070)
+# Agente local UltraImage (GPU NVIDIA)
 
 Este agente conecta o site ao motor Retrato Local por conexões HTTPS iniciadas pelo seu PC. Não requer abrir portas no roteador, VPN, túnel ou endereço público na rede doméstica. A foto original é baixada por um link temporário privado do Supabase, processada no PC com SeedVR2 7B Sharp em ruído zero e enviada ao armazenamento privado do site.
 
 ## Requisitos
 
-- Windows 10/11, driver NVIDIA atualizado e internet.
+- Windows 10/11, GPU NVIDIA com driver atualizado e internet. O agente não restringe a placa por modelo; GTX 1660 Super e RTX 5070 podem usar o mesmo fluxo, desde que o SeedVR2 esteja instalado e funcionando no Retrato Local.
 - Retrato Local já instalado e funcionando com o modelo SeedVR2 7B Sharp baixado.
 - Runtime do projeto no Vercel apontando `IMAGE_PROCESSOR=local` e `LOCAL_WORKER_TOKEN` definido com pelo menos 32 caracteres aleatórios.
 - Migration `supabase/migrations/003_local_gpu_worker.sql` aplicada ao Supabase antes do deploy do site.
@@ -15,10 +15,10 @@ O agente reutiliza `%LOCALAPPDATA%\RetratoLocal\runtime.json`, Python, dependên
 
 1. Na Vercel, defina `IMAGE_PROCESSOR` como `local` e crie `LOCAL_WORKER_TOKEN` com um segredo aleatório forte (mínimo 32 caracteres). Faça novo deploy para ativar.
 2. No Supabase SQL Editor, execute uma vez o conteúdo de `supabase/migrations/003_local_gpu_worker.sql`.
-3. Copie a pasta `retrato-local-5070` para o PC que tem a RTX 5070.
+3. Copie a pasta `retrato-local-5070` para o PC que executará o processamento local, inclusive o PC com a GTX 1660 Super.
 4. Clique com o botão direito em `Instalar-Agente.bat` → Executar. Informe `https://ultraimageai.com` e o mesmo token configurado na Vercel. O Windows protege o token para a conta atual.
 5. Execute `Iniciar-Agente.bat` e mantenha a janela aberta. O agente informa quando está aguardando ou quando conclui uma foto.
-6. Envie uma foto pelo site. Deixe o agente e o computador ligados até a página do resultado indicar que terminou.
+6. Envie uma foto pelo site. Deixe o agente e o computador ligados até a página do resultado indicar que terminou. O PC do agente pode estar em outra rede: ele busca trabalhos por uma conexão HTTPS de saída, sem exigir que esteja na mesma rede Wi-Fi do usuário.
 
 O mesmo token deve ser configurado no Vercel e no agente. Não o publique no GitHub nem o compartilhe. Se trocar esse segredo na Vercel, execute novamente `Instalar-Agente.bat`.
 
