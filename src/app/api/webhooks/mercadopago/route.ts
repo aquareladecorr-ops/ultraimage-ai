@@ -7,6 +7,7 @@
 
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import type { Json } from "@/types/database";
 import { getMpPayment, mapMpStatus } from "@/lib/payments/mercadopago";
 import { addCreditsFromPayment } from "@/lib/credits/transactions";
 import { sendPaymentApprovedEmail } from "@/lib/email/resend";
@@ -104,7 +105,7 @@ export async function POST(req: Request) {
                     mp_status: mp.status,
                     status: internalStatus,
                     payment_method: mp.payment_method_id ?? null,
-                    raw_payload: mp as unknown as Record<string, unknown>,
+                    raw_payload: mp as unknown as Json,
           })
           .eq("id", payment.id);
 

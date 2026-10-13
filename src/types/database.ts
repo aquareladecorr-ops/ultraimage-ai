@@ -28,6 +28,7 @@ export type Database = {
         };
         Insert: Omit<Database["public"]["Tables"]["profiles"]["Row"], "created_at" | "updated_at">;
         Update: Partial<Database["public"]["Tables"]["profiles"]["Row"]>;
+        Relationships: [];
       };
       packages: {
         Row: {
@@ -44,6 +45,7 @@ export type Database = {
         };
         Insert: Omit<Database["public"]["Tables"]["packages"]["Row"], "created_at">;
         Update: Partial<Database["public"]["Tables"]["packages"]["Row"]>;
+        Relationships: [];
       };
       credit_transactions: {
         Row: {
@@ -59,6 +61,7 @@ export type Database = {
         };
         Insert: Omit<Database["public"]["Tables"]["credit_transactions"]["Row"], "id" | "created_at">;
         Update: Partial<Database["public"]["Tables"]["credit_transactions"]["Row"]>;
+        Relationships: [];
       };
       image_jobs: {
         Row: {
@@ -77,7 +80,12 @@ export type Database = {
           result_height: number | null;
           processing_time_ms: number | null;
           status: "pending" | "processing" | "completed" | "failed" | "canceled";
+          processing_backend: "replicate" | "local";
           external_job_id: string | null;
+          worker_id: string | null;
+          worker_claim_token_hash: string | null;
+          worker_lease_expires_at: string | null;
+          worker_attempts: number;
           error_message: string | null;
           error_code: string | null;
           expires_at: string;
@@ -85,11 +93,15 @@ export type Database = {
           updated_at: string;
           completed_at: string | null;
         };
-        Insert: Omit<
+        Insert: Pick<
           Database["public"]["Tables"]["image_jobs"]["Row"],
-          "id" | "created_at" | "updated_at" | "expires_at"
-        > & { expires_at?: string };
+          "user_id" | "original_url" | "target_resolution_tier" | "credits_planned"
+        > & Partial<Omit<
+          Database["public"]["Tables"]["image_jobs"]["Row"],
+          "user_id" | "original_url" | "target_resolution_tier" | "credits_planned"
+        >>;
         Update: Partial<Database["public"]["Tables"]["image_jobs"]["Row"]>;
+        Relationships: [];
       };
       payments: {
         Row: {
@@ -111,6 +123,7 @@ export type Database = {
         };
         Insert: Omit<Database["public"]["Tables"]["payments"]["Row"], "id" | "created_at" | "updated_at">;
         Update: Partial<Database["public"]["Tables"]["payments"]["Row"]>;
+        Relationships: [];
       };
     };
     Functions: {
@@ -118,7 +131,13 @@ export type Database = {
       commit_credits:  { Args: { p_user_id: string; p_amount: number; p_job_id: string }; Returns: void };
       release_credits: { Args: { p_user_id: string; p_amount: number; p_job_id: string; p_reason?: string }; Returns: void };
       add_credits_from_payment: { Args: { p_user_id: string; p_amount: number; p_payment_id: string; p_description: string }; Returns: void };
+      claim_local_image_job: { Args: { p_worker_id: string; p_claim_token: string; p_lease_seconds?: number }; Returns: Array<{ job_id: string; user_id: string; original_url: string; original_width: number | null; original_height: number | null; target_resolution_tier: string; original_filename: string | null }> };
+      complete_local_image_job: { Args: { p_job_id: string; p_claim_token: string; p_result_key: string; p_result_width: number; p_result_height: number; p_processing_time_ms: number }; Returns: boolean };
+      fail_local_image_job: { Args: { p_job_id: string; p_claim_token: string; p_error_code: string; p_error_message: string }; Returns: boolean };
     };
+    Views: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 };
 
