@@ -5,7 +5,7 @@ import { formatDate, bytesToReadable } from "@/lib/utils";
 import { SignupTracker } from "@/components/app/signup-tracker";
 
 export default async function DashboardPage() {
-  const supabase = createServer();
+  const supabase = await createServer();
   const admin = createAdminClient();
   const { data: auth } = await supabase.auth.getUser();
   const userId = auth.user!.id;

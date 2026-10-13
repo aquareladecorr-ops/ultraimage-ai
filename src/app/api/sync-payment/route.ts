@@ -12,7 +12,7 @@ import { addCreditsFromPayment } from "@/lib/credits/transactions";
       * Idempotent - safe to call multiple times.
        */
        export async function POST(req: NextRequest) {
-         const supabase = createServer();
+         const supabase = await createServer();
            const { data: auth } = await supabase.auth.getUser();
              if (!auth.user) {
                  return NextResponse.json({ error: "unauthorized" }, { status: 401 });

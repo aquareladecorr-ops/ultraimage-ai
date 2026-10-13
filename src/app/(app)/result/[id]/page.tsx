@@ -12,7 +12,7 @@ import { JobAutoRefresh } from "@/components/app/job-auto-refresh";
 
 export default async function ResultPage({ params }) {
   noStore();
-  const supabase = createServer();
+  const supabase = await createServer();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) notFound();
 

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { SignOutButton } from "@/components/app/sign-out-button";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const supabase = createServer();
+  const supabase = await createServer();
   const admin = createAdminClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) redirect("/login");

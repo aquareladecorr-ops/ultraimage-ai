@@ -4,7 +4,7 @@ import { UploadFlow } from "@/components/app/upload-flow";
 
 export default async function UploadPage() {
   noStore();
-  const userClient = createServer();
+  const userClient = await createServer();
   const admin = createAdminClient();
 
   const { data: auth } = await userClient.auth.getUser();

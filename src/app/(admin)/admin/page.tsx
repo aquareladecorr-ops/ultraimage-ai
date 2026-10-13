@@ -4,7 +4,7 @@ import { formatBrl, formatDate } from "@/lib/utils";
 
 export default async function AdminPage() {
   // Note: middleware already validated is_admin
-  const sb = createServer();
+  const sb = await createServer();
   const admin = createAdminClient();
 
   const { data: { user } } = await sb.auth.getUser();

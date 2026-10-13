@@ -22,7 +22,7 @@ const QuerySchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const supabase = createServer();
+  const supabase = await createServer();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
