@@ -35,7 +35,7 @@ const BodySchema = z.object({
 
 export async function POST(req: Request) {
   // 1. Authenticate
-  const supabase = createServer();
+  const supabase = await createServer();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const userId = auth.user.id;
@@ -52,6 +52,18 @@ export async function POST(req: Request) {
   const tier = getTierById(parsed.data.tierId);
   if (!tier) return NextResponse.json({ error: "invalid_tier" }, { status: 400 });
 
+  const processor = process.env.IMAGE_PROCESSOR === "local" ? "local" : "replicate";
+  const originalPrefix = `users/${userId}/original/`;
+  if (!parsed.data.originalKey.startsWith(originalPrefix)) {
+    return NextResponse.json({ error: "invalid_image_key" }, { status: 400 });
+  }
+  if (processor === "local" && parsed.data.originalWidth * parsed.data.originalHeight > 1_200_000) {
+    return NextResponse.json(
+      { error: "image_too_large", detail: "O processamento local aceita imagens de até 1,2 megapixel." },
+      { status: 413 }
+    );
+  }
+
   const admin = createAdminClient();
 
   // 4. Create job row
@@ -66,6 +78,7 @@ export async function POST(req: Request) {
       original_height: parsed.data.originalHeight,
       target_resolution_tier: tier.id,
       credits_planned: tier.credits,
+      processing_backend: processor,
       credits_consumed: null,
       result_url: null,
       result_width: null,
@@ -99,6 +112,12 @@ export async function POST(req: Request) {
       );
     }
     throw err;
+  }
+
+  // Local jobs remain pending until the private RTX worker claims them. The
+  // user's credits stay reserved and are committed/refunded atomically later.
+  if (processor === "local") {
+    return NextResponse.json({ jobId: job.id, status: "pending", processor: "local" }, { status: 202 });
   }
 
   // 6. Mark processing + call IA

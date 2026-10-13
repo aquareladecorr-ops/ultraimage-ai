@@ -6,7 +6,7 @@ import { ONE_TIME_PACKAGES, formatBrl } from "@/config/packages";
 import { formatDate } from "@/lib/utils";
 
 type Props = {
-  availableCredits: number;h
+  availableCredits: number;
     totalPurchased: number;
       paymentStatus: string | null;
         preSelectedPackageId: string | null;

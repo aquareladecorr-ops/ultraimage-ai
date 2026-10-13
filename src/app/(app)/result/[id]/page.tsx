@@ -3,15 +3,16 @@ import { unstable_noStore as noStore } from "next/cache";
 import { createServer, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowUpRight, Download, AlertCircle, RefreshCw } from "lucide-react";
+import { ArrowUpRight, Download, AlertCircle } from "lucide-react";
 import { getPresignedReadUrl } from "@/lib/storage/r2";
 import { getTierById } from "@/config/credits";
 import { formatDate } from "@/lib/utils";
 import { ResultComparator } from "@/components/app/result-comparator";
+import { JobAutoRefresh } from "@/components/app/job-auto-refresh";
 
 export default async function ResultPage({ params }) {
   noStore();
-  const supabase = createServer();
+  const supabase = await createServer();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) notFound();
 
@@ -45,6 +46,7 @@ export default async function ResultPage({ params }) {
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-12 md:py-16">
+      <JobAutoRefresh jobId={job.id} status={job.status} />
       <Link
         href="/dashboard"
         className="text-sm text-bone-dim hover:text-bone transition mb-8 inline-block"
@@ -149,20 +151,21 @@ export default async function ResultPage({ params }) {
         </div>
       )}
 
+      {job.status === "pending" && (
+        <div className="border border-ink-line bg-ink-deep p-12 text-center">
+          <div className="inline-block w-10 h-10 border-2 border-copper border-t-transparent rounded-full animate-spin mb-6" />
+          <p className="text-bone-dim mb-4">
+            {job.processing_backend === "local" ? "Aguardando a RTX 5070 local..." : "Na fila de processamento..."}
+          </p>
+          <p className="text-xs text-bone-dim font-mono">Esta página atualiza sozinha enquanto o trabalho aguarda.</p>
+        </div>
+      )}
+
       {job.status === "processing" && (
         <div className="border border-ink-line bg-ink-deep p-12 text-center">
           <div className="inline-block w-10 h-10 border-2 border-copper border-t-transparent rounded-full animate-spin mb-6" />
-          <p className="text-bone-dim mb-4">Processando sua imagem...</p>
-          <p className="text-xs text-bone-dim font-mono mb-6">
-            isso pode levar ate 40 segundos
-          </p>
-          <Link
-            href={"/result/" + job.id}
-            className="inline-flex items-center gap-2 border border-ink-line px-4 py-2 text-sm hover:border-copper transition"
-          >
-            <RefreshCw size={14} />
-            Atualizar status
-          </Link>
+          <p className="text-bone-dim mb-4">{job.processing_backend === "local" ? "Processando na RTX 5070 local..." : "Processando imagem..."}</p>
+          <p className="text-xs text-bone-dim font-mono">Esta página atualiza sozinha.{job.processing_backend === "local" ? " Não feche o agente local." : ""}</p>
         </div>
       )}
 

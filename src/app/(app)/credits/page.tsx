@@ -4,9 +4,10 @@ import { CreditsPanel } from "@/components/app/credits-panel";
 export default async function CreditsPage({
   searchParams,
 }: {
-  searchParams: { status?: string; package?: string };
+  searchParams: Promise<{ status?: string; package?: string }>;
 }) {
-  const supabase = createServer();
+  const params = await searchParams;
+  const supabase = await createServer();
   const admin = createAdminClient();
   const { data: auth } = await supabase.auth.getUser();
   const userId = auth.user!.id;
@@ -50,8 +51,8 @@ export default async function CreditsPage({
       <CreditsPanel
         availableCredits={profile?.credits_available ?? 0}
         totalPurchased={profile?.total_credits_purchased ?? 0}
-        paymentStatus={searchParams.status ?? null}
-        preSelectedPackageId={searchParams.package ?? null}
+        paymentStatus={params.status ?? null}
+        preSelectedPackageId={params.package ?? null}
         payments={payments ?? []}
         transactions={transactions ?? []}
       />

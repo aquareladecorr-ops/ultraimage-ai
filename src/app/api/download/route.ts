@@ -4,7 +4,7 @@ import { createServer, createAdminClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 
 export async function GET(request: NextRequest) {
-    const supabase = createServer();
+    const supabase = await createServer();
     const { data: auth } = await supabase.auth.getUser();
     if (!auth.user) {
           return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

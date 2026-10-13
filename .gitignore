@@ -34,6 +34,8 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+__pycache__/
+*.py[cod]
 
 # editor
 .vscode/
