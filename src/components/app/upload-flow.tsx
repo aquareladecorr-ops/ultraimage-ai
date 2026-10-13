@@ -166,7 +166,7 @@ export function UploadFlow({ availableCredits }: { availableCredits: number }) {
             Arraste sua imagem aqui
           </p>
           <p className="text-bone-dim text-sm mb-1">ou clique para escolher</p>
-          <p className="text-xs text-bone-dim font-mono mt-6">JPG · PNG · WebP — até 25 MB</p>
+          <p className="text-xs text-bone-dim font-mono mt-6">JPG · PNG · WebP</p>
           {!BILLING_ENABLED && (
             <p className="text-xs text-copper mt-3">
               Limite do processamento local: até 1,2 MP (1.200.000 pixels). Imagens maiores precisam ser redimensionadas antes do envio.
