@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { safeNextPath } from "@/lib/safe-next-path";
 
 function GoogleIcon() {
   return (
@@ -19,7 +20,8 @@ function GoogleIcon() {
                                     function LoginForm() {
                                       const router = useRouter();
                                         const search = useSearchParams();
-                                          const next = search.get("next") || "/dashboard";
+                                          const next = safeNextPath(search.get("next"));
+                                            const loginForUpload = next === "/upload";
                                             const [email, setEmail] = useState("");
                                               const [password, setPassword] = useState("");
                                                 const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ function GoogleIcon() {
                                                                                                                       const supabase = createClient();
                                                                                                                           await supabase.auth.signInWithOAuth({
                                                                                                                                 provider: "google",
-                                                                                                                                      options: { redirectTo: `${window.location.origin}/auth/callback?next=${next}` },
+                                                                                                                                      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
                                                                                                                                           });
                                                                                                                                             }
 
@@ -57,6 +59,11 @@ function GoogleIcon() {
                                                                                                                                                                       Bem-vindo de volta.
                                                                                                                                                                             </h1>
                                                                                                                                                                                   <p className="text-bone-dim mb-10">Continue de onde parou.</p>
+                                                                                                                                              {loginForUpload && (
+                                                                                                                                                  <p className="-mt-6 mb-8 border border-copper/30 bg-ink-deep px-4 py-3 text-sm text-bone-dim">
+                                                                                                                                                    Entre na sua conta para enviar a imagem. Depois do login, você voltará para a tela de upload.
+                                                                                                                                                  </p>
+                                                                                                                                              )}
                                                                                                                                                                                         <button
                                                                                                                                                                                                 type="button"
                                                                                                                                                                                                         onClick={handleGoogle}
