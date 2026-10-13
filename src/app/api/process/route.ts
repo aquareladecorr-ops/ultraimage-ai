@@ -23,6 +23,7 @@ import { reserveCredits, commitCredits, releaseCredits, InsufficientCreditsError
 import { upscaler, UpscaleError } from "@/lib/ai/upscaler";
 import { getPresignedReadUrl, uploadBuffer, buildObjectKey } from "@/lib/storage/r2";
 import { sendJobCompletedEmail, sendJobFailedEmail } from "@/lib/email/resend";
+import { BILLING_ENABLED } from "@/config/billing";
 
 const BodySchema = z.object({
   originalKey: z.string().min(1),
@@ -53,6 +54,9 @@ export async function POST(req: Request) {
   if (!tier) return NextResponse.json({ error: "invalid_tier" }, { status: 400 });
 
   const processor = process.env.IMAGE_PROCESSOR === "local" ? "local" : "replicate";
+  if (!BILLING_ENABLED && processor !== "local") {
+    return NextResponse.json({ error: "local_processing_unavailable" }, { status: 503 });
+  }
   const originalPrefix = `users/${userId}/original/`;
   if (!parsed.data.originalKey.startsWith(originalPrefix)) {
     return NextResponse.json({ error: "invalid_image_key" }, { status: 400 });
@@ -77,7 +81,7 @@ export async function POST(req: Request) {
       original_width: parsed.data.originalWidth,
       original_height: parsed.data.originalHeight,
       target_resolution_tier: tier.id,
-      credits_planned: tier.credits,
+      credits_planned: BILLING_ENABLED ? tier.credits : 0,
       processing_backend: processor,
       credits_consumed: null,
       result_url: null,
@@ -99,7 +103,7 @@ export async function POST(req: Request) {
 
   // 5. Reserve credits
   try {
-    await reserveCredits({ userId, amount: tier.credits, jobId: job.id });
+    if (BILLING_ENABLED) await reserveCredits({ userId, amount: tier.credits, jobId: job.id });
   } catch (err) {
     if (err instanceof InsufficientCreditsError) {
       await admin
@@ -143,14 +147,14 @@ export async function POST(req: Request) {
     await uploadBuffer(resultKey, buf, resp.headers.get("content-type") ?? "image/jpeg");
 
     // 8. Commit credits + finalize job
-    await commitCredits({ userId, amount: tier.credits, jobId: job.id });
+    if (BILLING_ENABLED) await commitCredits({ userId, amount: tier.credits, jobId: job.id });
 
     await admin
       .from("image_jobs")
       .update({
         status: "completed",
         result_url: resultKey,
-        credits_consumed: tier.credits,
+        credits_consumed: BILLING_ENABLED ? tier.credits : 0,
         processing_time_ms: result.processingTimeMs,
         external_job_id: result.externalJobId,
         completed_at: new Date().toISOString(),
@@ -166,12 +170,14 @@ export async function POST(req: Request) {
     const code = err instanceof UpscaleError ? err.code : "UNKNOWN_ERROR";
 
     // Release reserved credits
-    await releaseCredits({
-      userId,
-      amount: tier.credits,
-      jobId: job.id,
-      reason: `Falha: ${message}`,
-    }).catch(console.error);
+    if (BILLING_ENABLED) {
+      await releaseCredits({
+        userId,
+        amount: tier.credits,
+        jobId: job.id,
+        reason: `Falha: ${message}`,
+      }).catch(console.error);
+    }
 
     await admin
       .from("image_jobs")

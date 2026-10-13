@@ -9,7 +9,7 @@ export const metadata: Metadata = {
       default: "UltraImage AI — Suas fotos, em sua melhor versão",
           template: "%s · UltraImage AI",
             },
-              description: "Ampliação de imagens com IA premium. Resolução até 100 megapixels, em segundos, com qualidade que sustenta impressão grande. Pagamento em real, suporte em português.",
+              description: "Ampliação de imagens com IA premium. Resolução até 100 megapixels, em segundos, com qualidade que sustenta impressão grande. Processamento gratuito nesta fase, com suporte em português.",
                 metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://ultraimageai.com"),
                   manifest: "/manifest.json",
                     themeColor: "#0a0a0a",

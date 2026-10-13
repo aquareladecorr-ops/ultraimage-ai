@@ -6,6 +6,7 @@ import { Upload, X, ArrowUpRight, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { RESOLUTION_TIERS, type ResolutionTier } from "@/config/credits";
 import { bytesToReadable } from "@/lib/utils";
+import { BILLING_ENABLED } from "@/config/billing";
 
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 25 * 1024 * 1024;
@@ -30,7 +31,7 @@ export function UploadFlow({ availableCredits }: { availableCredits: number }) {
   const [dragOver, setDragOver] = useState(false);
 
   const tier = RESOLUTION_TIERS.find((t) => t.id === tierId)!;
-  const hasEnoughCredits = availableCredits >= tier.credits;
+  const hasEnoughCredits = !BILLING_ENABLED || availableCredits >= tier.credits;
 
   async function handleFile(f: File) {
     setError(null);
@@ -209,21 +210,12 @@ export function UploadFlow({ availableCredits }: { availableCredits: number }) {
 
           <div className="space-y-2 mb-8">
             {RESOLUTION_TIERS.map((t) => (
-              <TierOption key={t.id} tier={t} selected={t.id === tierId} onSelect={() => setTierId(t.id)} />
+              <TierOption key={t.id} tier={t} selected={t.id === tierId} onSelect={() => setTierId(t.id)} showCredits={BILLING_ENABLED} />
             ))}
           </div>
 
           <div className="border-t border-ink-line pt-6">
-            <div className="flex items-center justify-between mb-4 text-sm">
-              <span className="text-bone-dim">Custo</span>
-              <span className="font-mono text-copper">
-                {tier.credits} {tier.credits === 1 ? "crédito" : "créditos"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between mb-6 text-sm">
-              <span className="text-bone-dim">Saldo após</span>
-              <span className="font-mono text-bone-dim">{availableCredits - tier.credits} restantes</span>
-            </div>
+            {!BILLING_ENABLED && <p className="text-sm text-bone-dim mb-5">Grátis durante a fase atual. Nenhum crédito será descontado.</p>}
 
             {!hasEnoughCredits ? (
               <div className="space-y-3">
@@ -274,7 +266,7 @@ export function UploadFlow({ availableCredits }: { availableCredits: number }) {
           Não conseguimos processar.
         </h2>
         <p className="text-bone-dim mb-2">{error}</p>
-        <p className="text-xs text-bone-dim font-mono mb-8">seus créditos foram preservados</p>
+        <p className="text-xs text-bone-dim font-mono mb-8">Você pode tentar novamente pelo painel.</p>
         <button onClick={reset} className="px-6 py-3 border border-ink-line hover:border-copper transition">
           Tentar de novo
         </button>
@@ -285,7 +277,7 @@ export function UploadFlow({ availableCredits }: { availableCredits: number }) {
   return null;
 }
 
-function TierOption({ tier, selected, onSelect }: { tier: ResolutionTier; selected: boolean; onSelect: () => void }) {
+function TierOption({ tier, selected, onSelect, showCredits }: { tier: ResolutionTier; selected: boolean; onSelect: () => void; showCredits: boolean }) {
   return (
     <button
       onClick={onSelect}
@@ -300,11 +292,11 @@ function TierOption({ tier, selected, onSelect }: { tier: ResolutionTier; select
         </div>
         <div className="text-xs text-bone-dim">{tier.description}</div>
       </div>
-      <div className="text-right flex-shrink-0">
+      {showCredits && <div className="text-right flex-shrink-0">
         <div className="font-mono text-copper text-sm">
           {tier.credits} {tier.credits === 1 ? "crédito" : "créditos"}
         </div>
-      </div>
+      </div>}
     </button>
   );
 }
