@@ -73,8 +73,8 @@ As seguintes variáveis estão ativas no projeto Vercel:
 ### Como re-executar a migration
 Acesse: Supabase Dashboard → SQL Editor e execute o arquivo supabase/migrations/001_initial_schema.sql do repositório.
 
-### Motor local na RTX 5070
-Para rotear novos trabalhos pelo agente local, execute `supabase/migrations/003_local_gpu_worker.sql` uma vez no SQL Editor antes de publicar o código dessa integração. Em Vercel → Settings → Environment Variables, configure `IMAGE_PROCESSOR=local` e `LOCAL_WORKER_TOKEN` como um segredo aleatório com no mínimo 32 caracteres. Faça redeploy e instale o agente em `workers/retrato-local-5070` no PC com Retrato Local/SeedVR2 7B Sharp. O agente só inicia conexões HTTPS de saída; não abra portas no roteador.
+### Motor local em GPU NVIDIA
+Para rotear novos trabalhos pelo agente local, execute `supabase/migrations/003_local_gpu_worker.sql` uma vez no SQL Editor antes de publicar o código dessa integração. Em Vercel → Settings → Environment Variables, configure `IMAGE_PROCESSOR=local` e `LOCAL_WORKER_TOKEN` como um segredo aleatório com no mínimo 32 caracteres. Faça redeploy e instale o agente em `workers/retrato-local-5070` no PC com Retrato Local/SeedVR2 7B Sharp. O agente não restringe o modelo da GPU: GTX 1660 Super e RTX 5070 podem usar o mesmo fluxo se o motor Retrato Local já funcionar no PC. Ele só inicia conexões HTTPS de saída, inclusive quando estiver em outra rede; não abra portas no roteador.
 
 O processamento de IA não usa Replicate quando o motor local está selecionado. O saldo de créditos e os limites existentes continuam valendo, e Vercel/Supabase seguem sujeitos às regras dos seus planos. Para voltar ao Replicate, altere `IMAGE_PROCESSOR` para `replicate` ou remova a variável e faça redeploy.
 

@@ -155,7 +155,7 @@ export default async function ResultPage({ params }) {
         <div className="border border-ink-line bg-ink-deep p-12 text-center">
           <div className="inline-block w-10 h-10 border-2 border-copper border-t-transparent rounded-full animate-spin mb-6" />
           <p className="text-bone-dim mb-4">
-            {job.processing_backend === "local" ? "Aguardando a RTX 5070 local..." : "Na fila de processamento..."}
+            {job.processing_backend === "local" ? "Aguardando o agente local..." : "Na fila de processamento..."}
           </p>
           <p className="text-xs text-bone-dim font-mono">Esta página atualiza sozinha enquanto o trabalho aguarda.</p>
         </div>
@@ -164,7 +164,7 @@ export default async function ResultPage({ params }) {
       {job.status === "processing" && (
         <div className="border border-ink-line bg-ink-deep p-12 text-center">
           <div className="inline-block w-10 h-10 border-2 border-copper border-t-transparent rounded-full animate-spin mb-6" />
-          <p className="text-bone-dim mb-4">{job.processing_backend === "local" ? "Processando na RTX 5070 local..." : "Processando imagem..."}</p>
+          <p className="text-bone-dim mb-4">{job.processing_backend === "local" ? "Processando no agente local..." : "Processando imagem..."}</p>
           <p className="text-xs text-bone-dim font-mono">Esta página atualiza sozinha.{job.processing_backend === "local" ? " Não feche o agente local." : ""}</p>
         </div>
       )}
