@@ -20,7 +20,7 @@ export function Footer() {
 
           {[
             { title: "Produto", links: ["Como funciona", "Acesso grátis", "API (em breve)", "Status"] },
-            { title: "Suporte", links: ["Central de ajuda", "WhatsApp", "contato@"] },
+            { title: "Suporte", links: ["Central de ajuda", "contato@"] },
             { title: "Legal", links: ["Termos de uso", "Privacidade", "Reembolso", "LGPD"] },
           ].map((col, i) => (
             <div key={col.title} className={`md:col-span-2 ${i === 0 ? "md:col-start-7" : ""}`}>
